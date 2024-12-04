@@ -14,6 +14,8 @@ public class PositionMaintainer : MonoBehaviour
 
     Vector3 currentSpeedVector = Vector3.zero;
 
+    public float MoveSpeedX => currentSpeedVector.x;
+
     void LateUpdate()
     {
         if (Mathf.Approximately(Mathf.Abs(Vector3.Distance(transform.position, targetPoint.position)), allowedDistance))
