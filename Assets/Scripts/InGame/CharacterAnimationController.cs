@@ -11,7 +11,6 @@ public class CharacterAnimationController : MonoBehaviour
     private const string PARAMETER_MOVESPEED = "MoveSpeed";
 
     [Header("캐릭터 이동 관련 스크립트")]
-    public PlayerInput input;
     public PositionMaintainer positionMaintainer;
 
     private float maxSpeed = 1.0f;
