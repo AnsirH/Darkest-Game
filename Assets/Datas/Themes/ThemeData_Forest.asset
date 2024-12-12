@@ -1,0 +1,33 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 60e36f834f69a084d851380dc3e123ea, type: 3}
+  m_Name: ThemeData_Forest
+  m_EditorClassIdentifier: 
+  Name: Forest
+  groundPrefab: {fileID: 4125297202560287198, guid: b5419f43e6770dc4284846056940e32a, type: 3}
+  bigProps:
+  - {fileID: 1225053272358242217, guid: d8e8c77f6c4e0f94f87dc20a49cb49ca, type: 3}
+  - {fileID: 632735580453541145, guid: 52671753d7e3f04489d6410e4f33e025, type: 3}
+  - {fileID: 8411559181090709509, guid: 4e91933b6fe40884f923f011aa5d30c7, type: 3}
+  - {fileID: 8901954546666617085, guid: 694ef5b54ab725e45b082d3f3dd7ad24, type: 3}
+  middleProps:
+  - {fileID: 197606475674569565, guid: 1fcd1a7ff5bdbfe459bb2a3064ed86ca, type: 3}
+  - {fileID: 9031815997562154227, guid: 4b1055483ec0cc2438792a935a870833, type: 3}
+  - {fileID: 101625748193796706, guid: f7a10fcd3b0b92941aa1829cff2e4288, type: 3}
+  smallProps:
+  - {fileID: 5814027238996867374, guid: 1831964ebc06a6f469333ae2e0e22b99, type: 3}
+  - {fileID: 2048000096055208745, guid: 089a56878b603724a803ac8baaef6f4f, type: 3}
+  - {fileID: 8722503820151738575, guid: ecf51bff78ce0684a9874441ac97b28d, type: 3}
+  - {fileID: 8981138129157064012, guid: f088755d41a87f1458cb8bba0ca62141, type: 3}
+  - {fileID: 4145331973984054564, guid: 5908f24bba6e0844da02801faa37029c, type: 3}
+  doorProps: []
+  monsterPrefab: {fileID: 0}

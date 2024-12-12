@@ -1,0 +1,25 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4f107b4404f0dd049b4a24399a754aa8, type: 3}
+  m_Name: DungeonData_Forest
+  m_EditorClassIdentifier: 
+  DungeonName: Forest
+  ThemeData: {fileID: 11400000, guid: 30bd98f691bd4a448ab5e28d13e9fef7, type: 2}
+  MapDatas:
+  - {fileID: 11400000, guid: be8ad90d3aac1224592d3ebbbc26ee2b, type: 2}
+  - {fileID: 11400000, guid: 95bdb3ecb08c2e14c8e8497bf991bc2e, type: 2}
+  - {fileID: 11400000, guid: ba20d40621464bb4ab056101ef281d82, type: 2}
+  - {fileID: 11400000, guid: 0aef7eb6a6771c046a2f7b3df89f8379, type: 2}
+  - {fileID: 11400000, guid: 0fb843a4767f03740ba2769c5ec3ab39, type: 2}
+  - {fileID: 11400000, guid: 9b3803510cc683246b00487fc2c43cb0, type: 2}
+  BossMap: {fileID: 11400000, guid: 2592bdb03f0c2d946a53569353827c93, type: 2}
+  RequireEXP: 64000000c80000002c010000
