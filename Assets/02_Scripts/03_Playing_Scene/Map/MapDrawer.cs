@@ -33,7 +33,7 @@ namespace DarkestGame.Map
         /// 컴포넌트 초기화
         /// 오프셋 값을 설정하고 맵 버튼들을 생성합니다.
         /// </summary>
-        private void Awake()
+        private void Start()
         {
             roomButtonOffset = roomButtonRect.rect.width * 0.5f;
             tileButtonOffset = tileButtonRect.rect.width * 0.5f;
