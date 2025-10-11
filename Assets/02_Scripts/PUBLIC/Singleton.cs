@@ -4,6 +4,7 @@ using UnityEngine;
 
 public class Singleton<T> : MonoBehaviour where T : Component
 {
+    [SerializeField] bool isDontDestroyOnLoad = false;
     private static T inst;
 
     public static T Inst
@@ -30,7 +31,8 @@ public class Singleton<T> : MonoBehaviour where T : Component
         if (inst == null)
         {
             inst = this as T;
-            DontDestroyOnLoad(inst);
+            if (isDontDestroyOnLoad)
+                DontDestroyOnLoad(inst);
         }
         else
         {

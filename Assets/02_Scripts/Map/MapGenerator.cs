@@ -6,7 +6,7 @@ using UnityEngine.UIElements;
 
 namespace DarkestGame.Map
 {
-    public class MapGenerator
+    public static class MapGenerator
     {
         /// <summary>
         /// 던전 맵 생성 알고리즘

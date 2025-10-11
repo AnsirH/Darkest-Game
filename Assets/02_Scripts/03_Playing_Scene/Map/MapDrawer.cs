@@ -1,7 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.UIElements;
 
 namespace DarkestGame.Map
 {
@@ -11,34 +10,37 @@ namespace DarkestGame.Map
     /// </summary>
     public class MapDrawer : MonoBehaviour
     {
+        [Header("references")]
+        [SerializeField] RectTransform mapDrawArea;
+
         /// <summary>방 버튼의 RectTransform 프리팹</summary>
-        public RectTransform roomButtonRect;
-        
+        [SerializeField] MapTileRoomButton roomMapTilePrefab;
+
         /// <summary>타일 버튼의 RectTransform 프리팹</summary>
-        public RectTransform tileButtonRect;
+        [SerializeField] MapTileUI tileMapTilePrefab;
 
+        [Header("variables")]
         /// <summary>방 버튼 간의 오프셋 거리</summary>
-        public float roomButtonOffset = 30.0f;
-        
+        [SerializeField] float roomMapTileSize = 70.0f;
+
         /// <summary>타일 버튼 간의 오프셋 거리</summary>
-        public float tileButtonOffset = 10.0f;
+        [SerializeField] float tileMapTileSize = 20.0f;
 
-        /// <summary>방 데이터와 UI 버튼을 매핑하는 딕셔너리</summary>
-        Dictionary<RoomData, RectTransform> roomButtons = new();
-        
-        /// <summary>타일 데이터와 UI 버튼을 매핑하는 딕셔너리</summary>
-        Dictionary<TileData, RectTransform> tileButtons = new();
+        // variables
+        Dictionary<RoomData, MapTileRoomButton> roomMapTiles = new();
+        Dictionary<TileData, MapTileUI> tileMapTiles = new();
+        MapTileUI currentRoomMT;
+        MapTileUI currentTileMT;
 
-        /// <summary>
-        /// 컴포넌트 초기화
-        /// 오프셋 값을 설정하고 맵 버튼들을 생성합니다.
-        /// </summary>
+        private void Awake()
+        {
+            MapManager.Inst.OnEnterRoom += OnEnterRoomHandler;
+            MapManager.Inst.OnEnterTile += OnEnterTileHandler;
+        }
+
         private void Start()
         {
-            roomButtonOffset = roomButtonRect.rect.width * 0.5f;
-            tileButtonOffset = tileButtonRect.rect.width * 0.5f;
-
-            GenerateButtons(DungeonManager.Inst.currentMap);
+            GenerateButtons(MapManager.Inst.Map);
         }
 
         /// <summary>
@@ -48,15 +50,15 @@ namespace DarkestGame.Map
         public void GenerateButtons(Map map)
         {
             if (map == null) return;
-            roomButtons.Clear();
-            tileButtons.Clear();
+            roomMapTiles.Clear();
+            tileMapTiles.Clear();
 
             // 1. 방 생성 (이미 생성된 방 제외)
             // 2. 복도의 다른 방 (이미 생성된 방 제외)
             // 3. 복도의 다른방으로 가는 복도 (이미 생성된 방 제외)
 
             Vector2 nextRoomPosition = Vector2.zero;
-            float distanceBetweenRooms = roomButtonOffset * 2 + map.TileCount * 2 * tileButtonOffset;
+            float distanceBetweenRooms = roomMapTileSize + map.TileCount * tileMapTileSize;
             
             // 모든 방을 순회하며 UI 버튼 생성
             for (int i = 0; i < map.Rooms.Count; i++)
@@ -65,15 +67,15 @@ namespace DarkestGame.Map
                 nextRoomPosition = newRoom.position * (int)distanceBetweenRooms;
                 
                 // 방 버튼이 아직 생성되지 않았다면 생성
-                if (!roomButtons.ContainsKey(newRoom))
+                if (!roomMapTiles.ContainsKey(newRoom))
                 {
-                    CreateRoomButton(newRoom, nextRoomPosition);
+                    CreateRoomMapTile(newRoom, nextRoomPosition);
                 }
 
                 // 4방향 복도 확인 및 타일 버튼 생성
                 for (int j = 0; j < 4; j++)
                 {
-                    if (newRoom.exitHallways[j] != null && !tileButtons.ContainsKey(newRoom.exitHallways[j].tiles[0]))
+                    if (newRoom.exitHallways[j] != null && !tileMapTiles.ContainsKey(newRoom.exitHallways[j].tiles[0]))
                     {
                         Vector2 nextButtonPosition = nextRoomPosition;
                         
@@ -88,23 +90,22 @@ namespace DarkestGame.Map
                         };
 
                         // 복도 시작 위치로 이동
-                        nextButtonPosition += direction * roomButtonOffset;
+                        nextButtonPosition += direction * roomMapTileSize * 0.5f;
 
                         HallwayData newHallway = newRoom.exitHallways[j];
 
                         // 복도의 각 타일에 대해 버튼 생성
                         for (int k = 0; k < newHallway.tiles.Length; k++)
                         {
-                            nextButtonPosition += direction * tileButtonOffset;
+                            nextButtonPosition += direction * tileMapTileSize * 0.5f;
 
                             CreateTileButton(newHallway.tiles[k], nextButtonPosition);
 
-                            nextButtonPosition += direction * tileButtonOffset;
+                            nextButtonPosition += direction * tileMapTileSize * 0.5f;
                         }
                     }
                 }
             }
-
             SetCenter();
         }
 
@@ -113,12 +114,15 @@ namespace DarkestGame.Map
         /// </summary>
         /// <param name="roomData">방 데이터</param>
         /// <param name="buttonPosition">버튼 위치</param>
-        private void CreateRoomButton(RoomData roomData, Vector2 buttonPosition)
+        private void CreateRoomMapTile(RoomData roomData, Vector2 buttonPosition)
         {
-            RectTransform newRoomButtonRect = Instantiate(roomButtonRect.gameObject, transform).GetComponent<RectTransform>();
-            roomButtons.Add(roomData, newRoomButtonRect);
+            MapTileRoomButton roomUI = Instantiate(roomMapTilePrefab, transform);
+            roomUI.SetTileSize(Vector2.one * roomMapTileSize);
+            roomUI.UpdateImage(roomData.type);
+            roomUI.SetRoomData(roomData);
+            roomMapTiles.Add(roomData, roomUI);
 
-            newRoomButtonRect.anchoredPosition = buttonPosition;
+            roomUI.SetPosition(buttonPosition);
         }
 
         /// <summary>
@@ -128,10 +132,12 @@ namespace DarkestGame.Map
         /// <param name="buttonPosition">버튼 위치</param>
         private void CreateTileButton(TileData tileData, Vector2 buttonPosition)
         {
-            RectTransform tileRect = Instantiate(tileButtonRect.gameObject, transform).GetComponent<RectTransform>();
-            tileButtons.Add(tileData, tileRect);
+            MapTileUI tileUI = Instantiate(tileMapTilePrefab, transform);
+            tileUI.SetTileSize(Vector2.one * tileMapTileSize);
+            tileUI.UpdateImage(tileData.type);
+            tileMapTiles.Add(tileData, tileUI);
 
-            tileRect.anchoredPosition = buttonPosition;
+            tileUI.SetPosition(buttonPosition);
         }
 
         /// <summary>
@@ -142,25 +148,47 @@ namespace DarkestGame.Map
         {
             // 방 버튼들의 중심점 계산
             Vector2 center = Vector2.zero;
-            foreach (var roomButton in roomButtons)
+            foreach (var roomButton in roomMapTiles)
             {
-                center += roomButton.Value.anchoredPosition;
+                center += roomButton.Value.AnchoredPosition;
             }
-            center /= roomButtons.Count;
+            center /= roomMapTiles.Count;
 
             // 중앙으로 이동할 벡터 계산
             Vector2 moveVector = Vector2.zero - center;
 
             // 모든 방 버튼을 중앙으로 이동
-            foreach (var roomButton in roomButtons)
+            foreach (var roomButton in roomMapTiles)
             {
-                roomButton.Value.anchoredPosition += moveVector;
+                roomButton.Value.SetPosition(roomButton.Value.AnchoredPosition + moveVector);
             }
 
             // 모든 타일 버튼을 중앙으로 이동
-            foreach (var tileButton in tileButtons)
+            foreach (var tileButton in tileMapTiles)
             {
-                tileButton.Value.anchoredPosition += moveVector;
+                tileButton.Value.SetPosition(tileButton.Value.AnchoredPosition + moveVector);
+            }
+        }
+
+        void OnEnterRoomHandler()
+        {
+            if (currentRoomMT != null)
+                currentRoomMT.ActiveTileHighlight_Color(false);
+            if (roomMapTiles.TryGetValue(MapManager.Inst.CurrentRoom, out MapTileRoomButton roomMT))
+            {
+                currentRoomMT = roomMT;
+                currentRoomMT.ActiveTileHighlight_Color(true);
+            }
+        }
+
+        void OnEnterTileHandler()
+        {
+            if (currentTileMT != null)
+                currentTileMT.ActiveTileHighlight_Scale(false);
+            if (tileMapTiles.TryGetValue(MapManager.Inst.CurrentTile, out MapTileUI tileMT))
+            {
+                currentTileMT = tileMT;
+                currentTileMT.ActiveTileHighlight_Scale(true);
             }
         }
     }

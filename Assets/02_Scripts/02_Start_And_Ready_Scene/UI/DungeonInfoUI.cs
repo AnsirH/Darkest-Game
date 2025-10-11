@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
-public class StartAndReadySceneUI : MonoBehaviour
+public class DungeonInfoUI : MonoBehaviour
 {
     public DungeonPanel[] dungeonPanels = new DungeonPanel[5];
 
@@ -13,9 +13,14 @@ public class StartAndReadySceneUI : MonoBehaviour
     private void Awake()
     {
         for (int i = 0; i < dungeonPanels.Length; i++)
-        {
             dungeonPanels[i].dungeon = null;
-        }
+
+        startGameButton.onClick.AddListener(() => { LoadingManager.Inst.LoadSceneWithDungeonSetup(LoadingManager.SCENENAME_PLAYING).Forget(); });
+    }
+
+    private void Start()
+    {
+        DungeonManager.Inst.UpdateDungeonInfo();
 
         for (int i = 0; i < DungeonManager.Inst.dungeons.Count; i++)
         {
@@ -23,7 +28,6 @@ public class StartAndReadySceneUI : MonoBehaviour
             dungeonPanels[i].UpdateInfo();
         }
 
-        startGameButton.onClick.AddListener(() => { LoadingManager.Inst.LoadSceneWithDungeonSetup(LoadingManager.SCENENAME_PLAYING).Forget(); });
     }
 
     private void Update()

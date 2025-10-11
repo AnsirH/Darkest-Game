@@ -1,7 +1,9 @@
-using DarkestGame.Map;
+ï»¿using DarkestGame.Map;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+
+// Dungeon > Map > Room, Hallway
 
 [System.Serializable]
 public class Dungeon
@@ -12,37 +14,32 @@ public class Dungeon
 
     public int exp;
 
-    public List<Map> currentMaps;
+    /// <summary> í˜„ì¬ ë§µ /// </summary>
+    public List<Map> selectedMap;
 
+    /// <summary> í´ë¦¬ì–´ í•œ ë§µ /// </summary>
     private List<Map> clearedMaps;
 
-    public Dungeon(DungeonData data)
-    {
-        this.data = data;
-        level = 0;
-        exp = 0;
-        currentMaps = new() { MapGenerator.GenerateMap(data.MapDatas[0]) };
-    }
-
-    public Dungeon(DungeonData data, int level, int exp, List<Map> currentMaps)
+    public Dungeon(DungeonData data, int level = 0, int exp = 0)
     {
         this.data = data;
         this.level = level;
         this.exp = exp;
-        this.currentMaps = currentMaps;
+        // ë˜ì „ì€ ì²« ë²ˆì§¸ ë§µì„ ê¸°ë³¸ì ìœ¼ë¡œ ì„ íƒí•œë‹¤.
+        selectedMap = new() { MapGenerator.GenerateMap(data.MapDatas[0]) };
     }
 
     public void Complete(Map completedMap)
     {
         exp += completedMap.MapData.EXP;
 
-        currentMaps.Remove(completedMap);
+        selectedMap.Remove(completedMap);
         clearedMaps.Add(completedMap);
 
         for (int i = 0; i < completedMap.MapData.unlockMaps.Length; i++)
         {
             Map unlockMap = MapGenerator.GenerateMap(completedMap.MapData.unlockMaps[i]);
-            currentMaps.Add(unlockMap);
+            selectedMap.Add(unlockMap);
         }
 
         if (exp < data.RequireEXP[0]) { level = 0; }
@@ -50,7 +47,7 @@ public class Dungeon
         else if (exp < data.RequireEXP[2])
         {
             level = 2;
-            if (currentMaps.Find(x => x.MapData == data.BossMap) == null && clearedMaps.Find(x => x.MapData == data.BossMap) == null) currentMaps.Insert(0, MapGenerator.GenerateMap(data.BossMap));
+            if (selectedMap.Find(x => x.MapData == data.BossMap) == null && clearedMaps.Find(x => x.MapData == data.BossMap) == null) selectedMap.Insert(0, MapGenerator.GenerateMap(data.BossMap));
         }
         else { level = 3; }
     }
@@ -58,9 +55,9 @@ public class Dungeon
 
 public class DungeonManager : Singleton<DungeonManager>
 {
-    // °ÔÀÓ¿¡ ÀÖ´Â ¸ğµç ´øÀüÀ» °ü¸®ÇÑ´Ù.
-    // ´øÀüÀº ¸ÊµéÀ» °¡Áö°í ÀÖ°í, ¸ÊÀº ¹æ°ú ´Ù¸®, Å¸ÀÏÀÇ Á¤º¸¸¦ °¡Áö°í ÀÖ±â ¶§¹®¿¡ MapThemeManager¿¡ Á¢±ÙÇÏ´Â °ÍÀº
-    // ¸ğµç Àå¼Ò¿¡ Á¢±ÙÇÒ ¼ö ÀÖÀ½À» ÀÇ¹ÌÇÑ´Ù.    
+    // ê²Œì„ì— ìˆëŠ” ëª¨ë“  ë˜ì „ì„ ê´€ë¦¬í•œë‹¤.
+    // ë˜ì „ì€ ë§µë“¤ì„ ê°€ì§€ê³  ìˆê³ , ë§µì€ ë°©ê³¼ ë‹¤ë¦¬, íƒ€ì¼ì˜ ì •ë³´ë¥¼ ê°€ì§€ê³  ìˆê¸° ë•Œë¬¸ì— MapThemeManagerì— ì ‘ê·¼í•˜ëŠ” ê²ƒì€
+    // ëª¨ë“  ì¥ì†Œì— ì ‘ê·¼í•  ìˆ˜ ìˆìŒì„ ì˜ë¯¸í•œë‹¤.    
 
     public List<DungeonData> dungeonDatas = new();
     public List<Dungeon> dungeons = new();

@@ -167,6 +167,17 @@ namespace DarkestGame.Map
                 backHallway.linkedRoom = this;
             }
         }
+
+        public HallwayData GetExitHallway(RoomData nextRoom)
+        {
+            for (int i = 0; i < exitHallways.Length; ++i)
+            {
+                if (exitHallways[i].linkedRoom == nextRoom)
+                    return exitHallways[i];
+            }
+
+            return null;
+        }
     }
 
     /// <summary>

@@ -20,6 +20,12 @@ public class LimitedMovement : Movement
         transform.position = currentPosition;
     }
 
+    public void UpdateLimit(Vector3 startPoint, Vector3 endPoint)
+    {
+        this.startPoint = startPoint;
+        this.endPoint = endPoint;
+    }
+
     private void OnDrawGizmos()
     {
         Gizmos.color = Color.yellow;

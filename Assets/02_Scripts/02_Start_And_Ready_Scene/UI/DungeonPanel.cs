@@ -46,15 +46,15 @@ public class DungeonPanel : MonoBehaviour
             mapButtons[i].map = null;
             mapButtons[i].UpdateInfo();
         }
-        for (int i = 0; i < dungeon.currentMaps.Count; i++)
+        for (int i = 0; i < dungeon.selectedMap.Count; i++)
         {
-            mapButtons[i].map = dungeon.currentMaps[i];
+            mapButtons[i].map = dungeon.selectedMap[i];
             mapButtons[i].UpdateInfo();
         }
     }
 
     public void OnClickMapButton(int index)
     {
-        DungeonManager.Inst.currentMap = dungeon.currentMaps[index];
+        DungeonManager.Inst.currentMap = dungeon.selectedMap[index];
     }
 }
