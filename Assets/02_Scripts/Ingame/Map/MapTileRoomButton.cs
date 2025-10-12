@@ -11,7 +11,9 @@ namespace DarkestGame.Map
 
         public void MoveToThisRoom()
         {
-            MapManager.Inst.ExitRoom(roomData);
+            if (MapManager.Inst.CurrentLocation != CurrentLocation.Room) return;
+            if (MapManager.Inst.CurrentRoom != roomData && MapManager.Inst.CurrentRoom.CheckIsMoveableRoom(roomData))
+                MapManager.Inst.ExitRoom(roomData);
         }
 
         public void SetRoomData(RoomData roomData)

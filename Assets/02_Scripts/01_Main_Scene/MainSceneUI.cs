@@ -9,6 +9,6 @@ public class MainSceneUI : MonoBehaviour
 
     private void Awake()
     {
-        startGameButton.onClick.AddListener(() => { LoadingManager.Inst.LoadSceneWithDungeonSetup(LoadingManager.SCENENAME_STARTANDREADY).Forget(); });
+        startGameButton.onClick.AddListener(() => { SceneLoadManager.Inst.LoadSceneWithDungeonSetup(SceneLoadManager.SCENENAME_STARTANDREADY).Forget(); });
     }
 }

@@ -64,7 +64,7 @@ namespace DarkestGame.Map
             for (int i = 0; i < map.Rooms.Count; i++)
             {
                 RoomData newRoom = map.Rooms[i];
-                nextRoomPosition = newRoom.position * (int)distanceBetweenRooms;
+                nextRoomPosition = newRoom.Position * (int)distanceBetweenRooms;
                 
                 // 방 버튼이 아직 생성되지 않았다면 생성
                 if (!roomMapTiles.ContainsKey(newRoom))
@@ -75,7 +75,7 @@ namespace DarkestGame.Map
                 // 4방향 복도 확인 및 타일 버튼 생성
                 for (int j = 0; j < 4; j++)
                 {
-                    if (newRoom.exitHallways[j] != null && !tileMapTiles.ContainsKey(newRoom.exitHallways[j].tiles[0]))
+                    if (newRoom.ExitHallways[j] != null && !tileMapTiles.ContainsKey(newRoom.ExitHallways[j].Tiles[0]))
                     {
                         Vector2 nextButtonPosition = nextRoomPosition;
                         
@@ -92,14 +92,14 @@ namespace DarkestGame.Map
                         // 복도 시작 위치로 이동
                         nextButtonPosition += direction * roomMapTileSize * 0.5f;
 
-                        HallwayData newHallway = newRoom.exitHallways[j];
+                        HallwayData newHallway = newRoom.ExitHallways[j];
 
                         // 복도의 각 타일에 대해 버튼 생성
-                        for (int k = 0; k < newHallway.tiles.Length; k++)
+                        for (int k = 0; k < newHallway.Tiles.Length; k++)
                         {
                             nextButtonPosition += direction * tileMapTileSize * 0.5f;
 
-                            CreateTileButton(newHallway.tiles[k], nextButtonPosition);
+                            CreateTileButton(newHallway.Tiles[k], nextButtonPosition);
 
                             nextButtonPosition += direction * tileMapTileSize * 0.5f;
                         }
@@ -118,7 +118,7 @@ namespace DarkestGame.Map
         {
             MapTileRoomButton roomUI = Instantiate(roomMapTilePrefab, transform);
             roomUI.SetTileSize(Vector2.one * roomMapTileSize);
-            roomUI.UpdateImage(roomData.type);
+            roomUI.UpdateImage(roomData.RoomType);
             roomUI.SetRoomData(roomData);
             roomMapTiles.Add(roomData, roomUI);
 

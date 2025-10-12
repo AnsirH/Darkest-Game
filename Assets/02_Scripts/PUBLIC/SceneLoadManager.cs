@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
-public class LoadingManager : Singleton<LoadingManager>
+public class SceneLoadManager : Singleton<SceneLoadManager>
 {
     public static readonly string SCENENAME_MAIN = "Main Scene";
     public static readonly string SCENENAME_STARTANDREADY = "Start And Ready Scene";
@@ -19,7 +19,7 @@ public class LoadingManager : Singleton<LoadingManager>
 
         pressAnyKeyObj.SetActive(false);
 
-        // ¾À ºñµ¿±â ·Îµå (È°¼ºÈ­´Â ³ªÁß¿¡)
+        // ì”¬ ë¹„ë™ê¸° ë¡œë“œ (í™œì„±í™”ëŠ” ë‚˜ì¤‘ì—)
         AsyncOperation loadOperation = SceneManager.LoadSceneAsync(sceneName);
         loadOperation.allowSceneActivation = false;
 
@@ -30,7 +30,7 @@ public class LoadingManager : Singleton<LoadingManager>
             await UniTask.Yield();
         }
 
-        // ¾À ·Îµå ¿Ï·á »óÅÂ·Î ¼³Á¤
+        // ì”¬ ë¡œë“œ ì™„ë£Œ ìƒíƒœë¡œ ì„¤ì •
         while (loadOperation.progress < 0.9f)
         {
             await UniTask.Yield();
@@ -38,12 +38,12 @@ public class LoadingManager : Singleton<LoadingManager>
                 
         pressAnyKeyObj.SetActive(true);
 
-        // ¾Æ¹« Å° ÀÔ·Â ´ë±â
+        // ì•„ë¬´ í‚¤ ì…ë ¥ ëŒ€ê¸°
         await WaitForAnyKey();
 
         pressAnyKeyObj.SetActive(false);
 
-        // ¾À È°¼ºÈ­
+        // ì”¬ í™œì„±í™”
         loadOperation.allowSceneActivation = true;
     }
 

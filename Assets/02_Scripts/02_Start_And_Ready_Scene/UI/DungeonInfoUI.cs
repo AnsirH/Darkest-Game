@@ -15,7 +15,7 @@ public class DungeonInfoUI : MonoBehaviour
         for (int i = 0; i < dungeonPanels.Length; i++)
             dungeonPanels[i].dungeon = null;
 
-        startGameButton.onClick.AddListener(() => { LoadingManager.Inst.LoadSceneWithDungeonSetup(LoadingManager.SCENENAME_PLAYING).Forget(); });
+        startGameButton.onClick.AddListener(() => { SceneLoadManager.Inst.LoadSceneWithDungeonSetup(SceneLoadManager.SCENENAME_PLAYING).Forget(); });
     }
 
     private void Start()

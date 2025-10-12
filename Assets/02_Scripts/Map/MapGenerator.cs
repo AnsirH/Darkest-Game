@@ -28,7 +28,7 @@ namespace DarkestGame.Map
         /// </summary>
         /// <param name="mapData">맵 생성에 사용할 데이터</param>
         /// <returns>생성된 맵 객체</returns>
-        public static Map GenerateMap(MapData mapData)
+        public static Map GenerateMap(MapSOData mapData)
         {
             List<RoomData> newRooms = new();
             List<HallwayData> newHallways = new();
@@ -41,6 +41,20 @@ namespace DarkestGame.Map
             // currentStandardRoom: 현재 기준 방
             RoomData currentStandardRoom = new RoomData(roomPosition, RoomType.None);
             newRooms.Add(currentStandardRoom);
+
+            // 복도 연결 및 타일 생성 메서드
+            void LinkCorridorsAndPlaceTiles(RoomData standardRoom, RoomData targetRoom, 
+                ExitHallwayDirection inDirection, ExitHallwayDirection outDirection)
+            {
+                standardRoom.ConnectHallway(targetRoom, GenerateTilesBy(mapData), inDirection);
+
+                HallwayData newHallway = currentStandardRoom.ExitHallways[(int)inDirection];
+                newHallway.SetSceneName("Hallway Scene");
+                newHallways.Add(newHallway);
+                newHallways.Add(targetRoom.ExitHallways[(int)outDirection]);
+
+                for (int i = 0; i < newHallway.Tiles.Length; i++) { newTiles.Add(newHallway.Tiles[i]); }
+            }
 
             // 지정된 방 개수만큼 방을 생성
             while (newRooms.Count < mapData.RoomCount)
@@ -68,17 +82,8 @@ namespace DarkestGame.Map
                 if (CanCreateRoomPosition(newRooms, roomPosition))
                 {
                     RoomData newRoom = new(roomPosition, mapData.GetRandomRoomType());
-
-                    #region 복도 연결 및 타일 생성
-                    currentStandardRoom.ConnectHallway(newRoom, GenerateTilesBy(mapData), inDirection);
-
-                    HallwayData newHallway = currentStandardRoom.exitHallways[(int)inDirection];
-                    newHallways.Add(newHallway);
-                    newHallways.Add(newRoom.exitHallways[(int)outDirection]);
-
-                    for (int i = 0; i < newHallway.tiles.Length; i++) { newTiles.Add(newHallway.tiles[i]); }
-                    #endregion
-
+                    newRoom.SetSceneName("Room Scene");
+                    LinkCorridorsAndPlaceTiles(currentStandardRoom, newRoom, inDirection, outDirection);                    
                     newRooms.Add(newRoom);
                     currentStandardRoom = newRoom;
                 }
@@ -87,21 +92,10 @@ namespace DarkestGame.Map
                 {
                     // 새 위치에 있는 기존 방 데이터를 반환
                     RoomData overlappedRoom = GetOverlappedRoomData(newRooms, roomPosition);
-
-                    #region 복도 연결 및 타일 생성
-                    currentStandardRoom.ConnectHallway(overlappedRoom, GenerateTilesBy(mapData), inDirection);
-
-                    HallwayData newHallway = currentStandardRoom.exitHallways[(int)inDirection];
-                    newHallways.Add(newHallway);
-                    newHallways.Add(overlappedRoom.exitHallways[(int)outDirection]);
-
-                    for (int i = 0; i < newHallway.tiles.Length; i++) { newTiles.Add(newHallway.tiles[i]); }
-                    #endregion
-
+                    LinkCorridorsAndPlaceTiles(currentStandardRoom, overlappedRoom, inDirection, outDirection);                    
                     currentStandardRoom = overlappedRoom;
                 }
             }
-
             return new Map(mapData, newRooms, newHallways, newTiles);
         }
 
@@ -117,7 +111,7 @@ namespace DarkestGame.Map
             {
                 if (rooms[i] == null) continue;
 
-                if (rooms[i].position.x == roomPosition.x && rooms[i].position.y == roomPosition.y)
+                if (rooms[i].Position.x == roomPosition.x && rooms[i].Position.y == roomPosition.y)
                 {
                     return false;
                 }
@@ -137,7 +131,7 @@ namespace DarkestGame.Map
             {
                 if (rooms[i] == null) continue;
 
-                if (rooms[i].position.x == roomPosition.x && rooms[i].position.y == roomPosition.y)
+                if (rooms[i].Position.x == roomPosition.x && rooms[i].Position.y == roomPosition.y)
                 {
                     return rooms[i];
                 }
@@ -150,7 +144,7 @@ namespace DarkestGame.Map
         /// </summary>
         /// <param name="mapData">타일 생성에 사용할 맵 데이터</param>
         /// <returns>생성된 타일 배열</returns>
-        static TileData[] GenerateTilesBy(MapData mapData)
+        static TileData[] GenerateTilesBy(MapSOData mapData)
         {
             TileData[] tiles = new TileData[mapData.TileCount];
 

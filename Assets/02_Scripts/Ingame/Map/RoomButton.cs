@@ -16,7 +16,7 @@ public class RoomButton : MonoBehaviour
 
     public void UpdateButton()
     {
-        switch (roomData.type)
+        switch (roomData.RoomType)
         {
             case RoomType.None:
                 image.color = Color.black;

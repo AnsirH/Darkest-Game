@@ -17,6 +17,9 @@ public class MapTileUI : MonoBehaviour
     [SerializeField] float highlightScaleRatio;
     [SerializeField] Color hightlightColor;
 
+    // variables
+    float highlightDuration = 0.5f;
+
     // properties
     public Vector2 AnchoredPosition => rect.anchoredPosition;
 
@@ -77,11 +80,10 @@ public class MapTileUI : MonoBehaviour
     {
         Vector3 currentSize = rect.localScale;
         Vector3 targetSize = Vector3.one * sizeRatio;
-        float duration = 1.0f;
         float timer = 0.0f;
-        while (timer < duration)
+        while (timer < highlightDuration)
         {
-            rect.localScale = Vector3.Lerp(currentSize, targetSize, timer / duration);
+            rect.localScale = Vector3.Lerp(currentSize, targetSize, timer / highlightDuration);
             timer += Time.deltaTime;
             yield return null;
         }
@@ -96,11 +98,10 @@ public class MapTileUI : MonoBehaviour
     IEnumerator ChangeColor_Coroutine(Color targetColor)
     {
         Color currentColor = frameImage.color;
-        float duration = 1.0f;
         float timer = 0.0f;
-        while (timer < duration)
+        while (timer < highlightDuration)
         {
-            frameImage.color = Color.Lerp(currentColor, targetColor, timer / duration);
+            frameImage.color = Color.Lerp(currentColor, targetColor, timer / highlightDuration);
             timer += Time.deltaTime;
             yield return null;
         }

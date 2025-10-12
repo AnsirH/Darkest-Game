@@ -37,12 +37,12 @@ namespace DarkestGame.Map
     [System.Serializable]
     public class Map
     {
-        MapData mapData;
+        MapSOData mapData;
         [SerializeField] List<RoomData> rooms = new();
         [SerializeField] List<HallwayData> hallways = new();
         [SerializeField] List<TileData> tiles = new();
 
-        public MapData MapData => mapData;
+        public MapSOData MapData => mapData;
         public List<RoomData> Rooms => rooms;
         public List<HallwayData> Hallways => hallways;
         public List<TileData> Tiles => tiles;
@@ -61,7 +61,7 @@ namespace DarkestGame.Map
         /// <param name="rooms">방 목록</param>
         /// <param name="hallways">복도 목록</param>
         /// <param name="tiles">타일 목록</param>
-        public Map(MapData mapData, List<RoomData> rooms, List<HallwayData> hallways, List<TileData> tiles)
+        public Map(MapSOData mapData, List<RoomData> rooms, List<HallwayData> hallways, List<TileData> tiles)
         {
             this.mapData = mapData;
             this.rooms = rooms;
@@ -79,14 +79,17 @@ namespace DarkestGame.Map
     public class RoomData
     {
         /// <summary>방의 위치 (격자 좌표)</summary>
-        public Vector2Int position;
-        
-        /// <summary>방의 타입</summary>
-        public RoomType type;
-        
-        /// <summary>4방향 복도 배열 (상, 좌, 우, 하)</summary>
-        public HallwayData[] exitHallways = new HallwayData[4];
+        public Vector2Int Position { get; private set; }
 
+        /// <summary>방의 타입</summary>
+        public RoomType RoomType { get; private set; }
+
+        /// <summary>4방향 복도 배열 (상, 좌, 우, 하)</summary>
+        public HallwayData[] ExitHallways { get; private set; } = new HallwayData[4];
+
+        public string SceneName { get; private set; }
+
+        #region 방 데이터 생성자
         /// <summary>
         /// 방 데이터 생성자
         /// </summary>
@@ -97,16 +100,20 @@ namespace DarkestGame.Map
         /// <param name="upHallway">상단 복도 (선택사항)</param>
         /// <param name="downHallway">하단 복도 (선택사항)</param>
         public RoomData(Vector2Int position, RoomType type,
-            HallwayData leftHallway = null, HallwayData rightHallway = null, HallwayData upHallway = null, HallwayData downHallway = null)
+            HallwayData leftHallway = null,
+            HallwayData rightHallway = null,
+            HallwayData upHallway = null,
+            HallwayData downHallway = null)
         {
-            this.position = position;
-            this.type = type;
+            this.Position = position;
+            this.RoomType = type;
 
-            exitHallways[(int)ExitHallwayDirection.Up] = upHallway;
-            exitHallways[(int)ExitHallwayDirection.Left] = leftHallway;
-            exitHallways[(int)ExitHallwayDirection.Right] = rightHallway;
-            exitHallways[(int)ExitHallwayDirection.Down] = downHallway;
+            ExitHallways[(int)ExitHallwayDirection.Up] = upHallway;
+            ExitHallways[(int)ExitHallwayDirection.Left] = leftHallway;
+            ExitHallways[(int)ExitHallwayDirection.Right] = rightHallway;
+            ExitHallways[(int)ExitHallwayDirection.Down] = downHallway;
         }
+        #endregion
 
         /// <summary>
         /// 모든 복도가 연결되어 있는지 확인
@@ -115,9 +122,9 @@ namespace DarkestGame.Map
         {
             get
             {
-                for (int i = 0; i < exitHallways.Length; i++)
+                for (int i = 0; i < ExitHallways.Length; i++)
                 {
-                    if (exitHallways[i] == null) { return false; }
+                    if (ExitHallways[i] == null) { return false; }
                 }
                 return true;
             }
@@ -134,7 +141,7 @@ namespace DarkestGame.Map
             while (true)
             {
                 int randomIndex = Random.Range(0, 4);
-                if (exitHallways[randomIndex] == null) { return randomIndex; }
+                if (ExitHallways[randomIndex] == null) { return randomIndex; }
             }
         }
 
@@ -147,36 +154,62 @@ namespace DarkestGame.Map
         /// <param name="direction">복도 방향</param>
         public void ConnectHallway(RoomData targetRoom, TileData[] tiles, ExitHallwayDirection direction)
         {
-            if (exitHallways[(int)direction] == null)
+            if (ExitHallways[(int)direction] == null)
             {
                 // 현재 방에서 대상 방으로 가는 복도 생성
                 HallwayData goHallway = new(tiles, targetRoom);
-                exitHallways[(int)direction] = goHallway;
-                goHallway.linkedRoom = targetRoom;
+                ExitHallways[(int)direction] = goHallway;
+                goHallway.SetExitRoom(targetRoom);
 
                 // 역방향 타일 배열 생성 (복도 순서 반전)
                 TileData[] backHallwayTiles = new TileData[tiles.Length];
-                for (int i = 0; i < goHallway.tiles.Length; i++)
+                for (int i = 0; i < goHallway.Tiles.Length; i++)
                 {
-                    backHallwayTiles[i] = goHallway.tiles[goHallway.tiles.Length - 1 - i];
+                    backHallwayTiles[i] = goHallway.Tiles[goHallway.Tiles.Length - 1 - i];
                 }
 
                 // 대상 방에서 현재 방으로 가는 복도 생성
                 HallwayData backHallway = new(backHallwayTiles, this);
-                targetRoom.exitHallways[3 - (int)direction] = backHallway;
-                backHallway.linkedRoom = this;
+                targetRoom.ExitHallways[3 - (int)direction] = backHallway;
+                backHallway.SetExitRoom(this);
             }
         }
 
+        /// <summary>
+        /// 다음으로 이동할 방으로 가는 복도를 반환한다.
+        /// </summary>
+        /// <param name="nextRoom"></param>
+        /// <returns></returns>
         public HallwayData GetExitHallway(RoomData nextRoom)
         {
-            for (int i = 0; i < exitHallways.Length; ++i)
+            for (int i = 0; i < ExitHallways.Length; ++i)
             {
-                if (exitHallways[i].linkedRoom == nextRoom)
-                    return exitHallways[i];
+                if (ExitHallways[i] != null && ExitHallways[i].ExitRoom == nextRoom)
+                    return ExitHallways[i];
             }
 
             return null;
+        }
+
+        /// <summary>
+        /// 전환할 씬 이름 설정
+        /// </summary>
+        /// <param name="sceneName"></param>
+        public void SetSceneName(string sceneName) { SceneName = sceneName; }
+
+        /// <summary>
+        /// targetRoom이 이동 가능한 방인지 확인
+        /// </summary>
+        /// <param name="targetRoom"></param>
+        /// <returns></returns>
+        public bool CheckIsMoveableRoom(RoomData targetRoom)
+        {
+            for (int i = 0; i < ExitHallways.Length; ++i)
+            {
+                if (ExitHallways[i] != null && ExitHallways[i].ExitRoom == targetRoom)
+                    return true;
+            }
+            return false;
         }
     }
 
@@ -186,21 +219,26 @@ namespace DarkestGame.Map
     public class HallwayData
     {
         /// <summary>복도를 구성하는 타일 배열</summary>
-        public TileData[] tiles;
-        
+        public TileData[] Tiles { get; private set; }
+
         /// <summary>복도가 연결된 방</summary>
-        public RoomData linkedRoom;
+        public RoomData ExitRoom { get; private set; }
+
+        public string SceneName { get; private set; }
 
         /// <summary>
         /// 복도 데이터 생성자
         /// </summary>
         /// <param name="tiles">복도 타일 배열</param>
-        /// <param name="linkedRoom">연결된 방</param>
-        public HallwayData(TileData[] tiles, RoomData linkedRoom)
+        /// <param name="exitRoom">연결된 방</param>
+        public HallwayData(TileData[] tiles, RoomData exitRoom)
         {
-            this.tiles = tiles;
-            this.linkedRoom = linkedRoom;
+            Tiles = tiles;
+            ExitRoom = exitRoom;
         }
+
+        public void SetExitRoom(RoomData roomData) { ExitRoom = roomData; }
+        public void SetSceneName(string sceneName) { SceneName = sceneName; }
     }
 
     /// <summary>
@@ -219,7 +257,7 @@ namespace DarkestGame.Map
         {
             this.type = type;
         }
-        
+
         /// <summary>
         /// 타일 타입을 변경합니다.
         /// </summary>

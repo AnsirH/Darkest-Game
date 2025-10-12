@@ -36,7 +36,7 @@ public class CharacterContainerController : MonoBehaviour
         if (MapManager.Inst.CurrentLocation == CurrentLocation.Room)
             endPoint.x = MapManager.Inst.TileWorldDistance;
         else
-            endPoint.x = MapManager.Inst.CurrentHallway.tiles.Length * MapManager.Inst.TileWorldDistance;
+            endPoint.x = MapManager.Inst.CurrentHallway.Tiles.Length * MapManager.Inst.TileWorldDistance;
         movement.UpdateLimit(startPoint, endPoint);
     }
 }

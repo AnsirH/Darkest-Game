@@ -5,15 +5,15 @@ using UnityEngine;
 namespace DarkestGame.Map
 {
     [CreateAssetMenu(fileName = "MapData", menuName = "Create Data Asset/Create Map Data")]
-    public class MapData : ScriptableObject
+    public class MapSOData : ScriptableObject
     {
-        [Header("Å×¸¶")]
+        [Header("í…Œë§ˆ")]
         public MapThemeData ThemeData;
 
-        [Header("¹öÆ° »ö»ó")]
+        [Header("ë²„íŠ¼ ìƒ‰ìƒ")]
         public Color buttonColor;
 
-        [Header("¹æ Á¤º¸")]
+        [Header("ë°© ì •ë³´")]
         public int RoomCount = 0;
         public int RoomTypeNonePercent = 25;
         public int RoomTypeItemPercent = 25;
@@ -21,17 +21,17 @@ namespace DarkestGame.Map
         public int RoomTypeMonsterAndItemPercent = 25;
 
 
-        [Header("Å¸ÀÏ Á¤º¸")]
+        [Header("íƒ€ì¼ ì •ë³´")]
         public int TileCount = 0;
         public int TileTypeNonePercent = 50;
         public int TileTypeItemPercent = 25;
         public int TileTypeMonsterPercent = 25;
 
 
-        [Header("Å¬¸®¾î ½Ã ÇØ¹æ ¸Ê µ¥ÀÌÅÍ")]
-        public MapData[] unlockMaps;
+        [Header("í´ë¦¬ì–´ ì‹œ í•´ë°© ë§µ ë°ì´í„°")]
+        public MapSOData[] unlockMaps;
 
-        [Header("Å¬¸®¾î ½Ã °æÇèÄ¡")]
+        [Header("í´ë¦¬ì–´ ì‹œ ê²½í—˜ì¹˜")]
         public int EXP;
 
         public RoomType GetRandomRoomType()

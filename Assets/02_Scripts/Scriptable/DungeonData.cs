@@ -10,9 +10,9 @@ public class DungeonData : ScriptableObject
 
     public MapThemeData ThemeData;
 
-    public List<MapData> MapDatas;
+    public List<MapSOData> MapDatas;
 
-    public MapData BossMap;
+    public MapSOData BossMap;
 
     public readonly int[] RequireEXP = { 100, 300, 600 };
 }

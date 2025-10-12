@@ -31,8 +31,6 @@ public class Singleton<T> : MonoBehaviour where T : Component
         if (inst == null)
         {
             inst = this as T;
-            if (isDontDestroyOnLoad)
-                DontDestroyOnLoad(inst);
         }
         else
         {
@@ -41,5 +39,13 @@ public class Singleton<T> : MonoBehaviour where T : Component
                 Destroy(gameObject);
             }
         }
+        if (isDontDestroyOnLoad)
+            DontDestroyOnLoad(inst);
+    }
+
+    protected void DestroySelf()
+    {
+        inst = null;
+        Destroy(gameObject);
     }
 }
