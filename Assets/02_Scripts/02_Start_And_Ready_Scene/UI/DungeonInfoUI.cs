@@ -1,4 +1,5 @@
 using Cysharp.Threading.Tasks.Triggers;
+using DarkestLike.SceneLoad;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -15,16 +16,16 @@ public class DungeonInfoUI : MonoBehaviour
         for (int i = 0; i < dungeonPanels.Length; i++)
             dungeonPanels[i].dungeon = null;
 
-        startGameButton.onClick.AddListener(() => { SceneLoadManager.Inst.LoadSceneWithDungeonSetup(SceneLoadManager.SCENENAME_PLAYING).Forget(); });
+        startGameButton.onClick.AddListener(() => { SceneLoadManager.Inst.LoadDungeon(DungeonDataManager.Inst.CurrentMap).Forget(); });
     }
 
     private void Start()
     {
-        DungeonManager.Inst.UpdateDungeonInfo();
+        DungeonDataManager.Inst.UpdateDungeonInfo();
 
-        for (int i = 0; i < DungeonManager.Inst.dungeons.Count; i++)
+        for (int i = 0; i < DungeonDataManager.Inst.dungeons.Count; i++)
         {
-            dungeonPanels[i].dungeon = DungeonManager.Inst.dungeons[i];
+            dungeonPanels[i].dungeon = DungeonDataManager.Inst.dungeons[i];
             dungeonPanels[i].UpdateInfo();
         }
 
@@ -32,7 +33,7 @@ public class DungeonInfoUI : MonoBehaviour
 
     private void Update()
     {
-        if (DungeonManager.Inst.currentMap != null)
+        if (DungeonDataManager.Inst.CurrentMap != null)
         {
             if (!startGameButton.gameObject.activeSelf) startGameButton.gameObject.SetActive(true);
         }

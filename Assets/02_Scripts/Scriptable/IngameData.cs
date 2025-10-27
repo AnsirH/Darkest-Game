@@ -5,10 +5,10 @@ using UnityEngine;
 
 public class IngameData : ScriptableObject
 {
-    [Header("Ä³¸¯ÅÍ ÄÁÅ×ÀÌ³Ê ÀÌµ¿ ¼Óµµ")]
+    [Header("ìºë¦­í„° ì»¨í…Œì´ë„ˆ ì´ë™ ì†ë„")]
     public float ContainerMoveSpeed = 1.5f;
 
-    [Header("Position Maintainer ¼öÄ¡")]
+    [Header("Position Maintainer ìˆ˜ì¹˜")]
     public float MoveTime = 0.5f;
     public float MaxSpeed = 10;
     public float AllowedDistance = 0.05f;

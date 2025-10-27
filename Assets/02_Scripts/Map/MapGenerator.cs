@@ -3,8 +3,9 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UIElements;
+using DarkestLike.InDungeon.BattleSystem;
 
-namespace DarkestGame.Map
+namespace DarkestLike.Map
 {
     public static class MapGenerator
     {
@@ -27,8 +28,9 @@ namespace DarkestGame.Map
         /// 맵 데이터를 기반으로 던전 맵을 생성합니다.
         /// </summary>
         /// <param name="mapData">맵 생성에 사용할 데이터</param>
+        /// <param name="dungeonLevel">던전 레벨</param>
         /// <returns>생성된 맵 객체</returns>
-        public static Map GenerateMap(MapSOData mapData)
+        public static MapData GenerateMap(MapSOData mapData, int dungeonLevel)
         {
             List<RoomData> newRooms = new();
             List<HallwayData> newHallways = new();
@@ -39,19 +41,24 @@ namespace DarkestGame.Map
             
             // 첫 번째 방 생성
             // currentStandardRoom: 현재 기준 방
-            RoomData currentStandardRoom = new RoomData(roomPosition, RoomType.None);
+            RoomType firstRoomType = RoomType.None;
+            EnemyGroup firstRoomEnemyGroup = GenerateEnemyGroupForRoom(mapData, dungeonLevel, firstRoomType);
+            RoomData currentStandardRoom = new RoomData(roomPosition, firstRoomType, enemyGroup: firstRoomEnemyGroup);
             newRooms.Add(currentStandardRoom);
 
             // 복도 연결 및 타일 생성 메서드
-            void LinkCorridorsAndPlaceTiles(RoomData standardRoom, RoomData targetRoom, 
+            void LinkCorridorsAndPlaceTiles(RoomData targetRoom, 
                 ExitHallwayDirection inDirection, ExitHallwayDirection outDirection)
             {
-                standardRoom.ConnectHallway(targetRoom, GenerateTilesBy(mapData), inDirection);
+                currentStandardRoom.ConnectHallway(targetRoom, GenerateTilesBy(mapData, dungeonLevel), inDirection);
 
-                HallwayData newHallway = currentStandardRoom.ExitHallways[(int)inDirection];
+                HallwayData newHallway = targetRoom.ExitHallways[(int)outDirection];
                 newHallway.SetSceneName("Hallway Scene");
                 newHallways.Add(newHallway);
-                newHallways.Add(targetRoom.ExitHallways[(int)outDirection]);
+
+                newHallway = currentStandardRoom.ExitHallways[(int)inDirection];
+                newHallway.SetSceneName("Hallway Scene");
+                newHallways.Add(newHallway);
 
                 for (int i = 0; i < newHallway.Tiles.Length; i++) { newTiles.Add(newHallway.Tiles[i]); }
             }
@@ -81,9 +88,11 @@ namespace DarkestGame.Map
                 // 새 위치에 방이 없으면 새 방 생성
                 if (CanCreateRoomPosition(newRooms, roomPosition))
                 {
-                    RoomData newRoom = new(roomPosition, mapData.GetRandomRoomType());
+                    RoomType roomType = mapData.GetRandomRoomType();
+                    EnemyGroup enemyGroup = GenerateEnemyGroupForRoom(mapData, dungeonLevel, roomType);
+                    RoomData newRoom = new(roomPosition, roomType, enemyGroup: enemyGroup);
                     newRoom.SetSceneName("Room Scene");
-                    LinkCorridorsAndPlaceTiles(currentStandardRoom, newRoom, inDirection, outDirection);                    
+                    LinkCorridorsAndPlaceTiles(newRoom, inDirection, outDirection);                    
                     newRooms.Add(newRoom);
                     currentStandardRoom = newRoom;
                 }
@@ -92,11 +101,11 @@ namespace DarkestGame.Map
                 {
                     // 새 위치에 있는 기존 방 데이터를 반환
                     RoomData overlappedRoom = GetOverlappedRoomData(newRooms, roomPosition);
-                    LinkCorridorsAndPlaceTiles(currentStandardRoom, overlappedRoom, inDirection, outDirection);                    
+                    LinkCorridorsAndPlaceTiles(overlappedRoom, inDirection, outDirection);                    
                     currentStandardRoom = overlappedRoom;
                 }
             }
-            return new Map(mapData, newRooms, newHallways, newTiles);
+            return new MapData(mapData, newRooms, newHallways, newTiles);
         }
 
         /// <summary>
@@ -143,17 +152,56 @@ namespace DarkestGame.Map
         /// 맵 데이터를 기반으로 복도용 타일들을 생성합니다.
         /// </summary>
         /// <param name="mapData">타일 생성에 사용할 맵 데이터</param>
+        /// <param name="dungeonLevel">던전 레벨</param>
         /// <returns>생성된 타일 배열</returns>
-        static TileData[] GenerateTilesBy(MapSOData mapData)
+        static TileData[] GenerateTilesBy(MapSOData mapData, int dungeonLevel)
         {
             TileData[] tiles = new TileData[mapData.TileCount];
 
             for (int i = 0; i < tiles.Length; i++)
             {
-                tiles[i] = new(mapData.GetRandomTileType());
+                TileType tileType = mapData.GetRandomTileType();
+                EnemyGroup enemyGroup = GenerateEnemyGroupForTile(mapData, dungeonLevel, tileType);
+                tiles[i] = new(tileType, enemyGroup);
             }
 
             return tiles;
+        }
+
+        /// <summary>
+        /// 방 타입에 따른 적 그룹을 생성합니다.
+        /// </summary>
+        /// <param name="mapData">맵 데이터</param>
+        /// <param name="dungeonLevel">던전 레벨</param>
+        /// <param name="roomType">방 타입</param>
+        /// <returns>생성된 적 그룹</returns>
+        private static EnemyGroup GenerateEnemyGroupForRoom(MapSOData mapData, int dungeonLevel, RoomType roomType)
+        {
+            // 몬스터가 있는 방 타입만 적 생성
+            if (roomType == RoomType.Monster || roomType == RoomType.MonsterAndItem)
+            {
+                return EnemyGroupGenerator.GenerateEnemyGroupForRoom(mapData, dungeonLevel);
+            }
+            
+            return null;
+        }
+
+        /// <summary>
+        /// 타일 타입에 따른 적 그룹을 생성합니다.
+        /// </summary>
+        /// <param name="mapData">맵 데이터</param>
+        /// <param name="dungeonLevel">던전 레벨</param>
+        /// <param name="tileType">타일 타입</param>
+        /// <returns>생성된 적 그룹</returns>
+        private static EnemyGroup GenerateEnemyGroupForTile(MapSOData mapData, int dungeonLevel, TileType tileType)
+        {
+            // 몬스터 타일만 적 생성
+            if (tileType == TileType.Monster)
+            {
+                return EnemyGroupGenerator.GenerateEnemyGroupForTile(mapData, dungeonLevel);
+            }
+            
+            return null;
         }
     }
 }

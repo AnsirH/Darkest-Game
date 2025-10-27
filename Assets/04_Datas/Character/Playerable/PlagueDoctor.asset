@@ -1,0 +1,21 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8cf7fb71d83d3604083d30dd86ea8f3a, type: 3}
+  m_Name: PlagueDoctor
+  m_EditorClassIdentifier: 
+  MaxHP: 23
+  Attack: 6
+  Defense: 5
+  Speed: 5
+  Evasion: 5
+  Type: 1
+  ModelPrefab: {fileID: 8996961263505298292, guid: bf019812ec4d80e4a9a0d393ff64c6d3, type: 3}

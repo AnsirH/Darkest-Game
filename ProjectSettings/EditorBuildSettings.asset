@@ -9,12 +9,15 @@ EditorBuildSettings:
     path: Assets/01_Scenes/Main Scene.unity
     guid: 0e22cc0f4d654004f9bd518ee439b899
   - enabled: 1
-    path: Assets/01_Scenes/Start And Ready Scene.unity
+    path: Assets/01_Scenes/Select Dungeon Scene.unity
     guid: 6498aa785c009da4a92d00c82d7ff9ec
+  - enabled: 1
+    path: Assets/01_Scenes/Loading Scene.unity
+    guid: e6080006fccf70f4cab5db17826513e7
   - enabled: 1
     path: Assets/01_Scenes/Hallway Scene.unity
     guid: 9fc0d4010bbf28b4594072e72b8655ab
   - enabled: 1
-    path: Assets/01_Scenes/Loading Scene.unity
-    guid: e6080006fccf70f4cab5db17826513e7
+    path: Assets/01_Scenes/Room Scene.unity
+    guid: 257941f69299b8d45be25c1b8d76af92
   m_configObjects: {}

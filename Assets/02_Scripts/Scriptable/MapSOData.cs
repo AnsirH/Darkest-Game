@@ -1,8 +1,9 @@
+using DarkestLike.ScriptableObj;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace DarkestGame.Map
+namespace DarkestLike.Map
 {
     [CreateAssetMenu(fileName = "MapData", menuName = "Create Data Asset/Create Map Data")]
     public class MapSOData : ScriptableObject
@@ -20,13 +21,14 @@ namespace DarkestGame.Map
         public int RoomTypeMonsterPercent = 25;
         public int RoomTypeMonsterAndItemPercent = 25;
 
-
         [Header("타일 정보")]
         public int TileCount = 0;
         public int TileTypeNonePercent = 50;
         public int TileTypeItemPercent = 25;
         public int TileTypeMonsterPercent = 25;
 
+        [Header("몬스터 정보")]
+        public CharacterBase[] enemeies;
 
         [Header("클리어 시 해방 맵 데이터")]
         public MapSOData[] unlockMaps;

@@ -1,4 +1,4 @@
-using DarkestGame.Map;
+using DarkestLike.Map;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -8,7 +8,7 @@ public class DungeonPanel : MonoBehaviour
     [System.Serializable]
     public class MapButton
     {
-        public Map map;
+        public MapData map;
         public GameObject buttonObj;
         public Image buttonImage;
 
@@ -17,7 +17,7 @@ public class DungeonPanel : MonoBehaviour
             if (map == null) { buttonObj.SetActive(false); }
             else
             {
-                buttonImage.color = map.MapData.buttonColor;
+                buttonImage.color = map.MapSOData.buttonColor;
                 buttonObj.SetActive(true);
             }
         }
@@ -55,6 +55,6 @@ public class DungeonPanel : MonoBehaviour
 
     public void OnClickMapButton(int index)
     {
-        DungeonManager.Inst.currentMap = dungeon.selectedMap[index];
+        DungeonDataManager.Inst.SetCurrentMap(dungeon.selectedMap[index]);
     }
 }

@@ -1,22 +1,23 @@
+using DarkestLike.InDungeon;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace DarkestGame.Map
+namespace DarkestLike.Map
 {
     [CreateAssetMenu(fileName = "ThemeData", menuName = "Create Data Asset/Create Theme Data")]
     public class MapThemeData : ScriptableObject
     {
-        [Header("Å×¸¶ ÀÌ¸§")]
+        [Header("í…Œë§ˆ ì´ë¦„")]
         public string Name;
 
-        [Header("Å×¸¶ ¹è°æ ¿ä¼Ò")]
+        [Header("í…Œë§ˆ ë°°ê²½ ìš”ì†Œ")]
         public GameObject groundPrefab;
         public RandomProp[] bigProps;
         public RandomProp[] middleProps;
         public RandomProp[] smallProps;
 
-        [Header("¸ó½ºÅÍ")]
+        [Header("ëª¬ìŠ¤í„°")]
         public GameObject monsterPrefab;
     }
 }
