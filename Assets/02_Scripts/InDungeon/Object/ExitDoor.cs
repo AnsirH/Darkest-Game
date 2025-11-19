@@ -1,26 +1,37 @@
 using System.Collections;
 using System.Collections.Generic;
+using DarkestLike.InDungeon.Manager;
 using UnityEngine;
 
 namespace DarkestLike.InDungeon.Object
 {
     public class ExitDoor : MonoBehaviour
     {
+        private readonly int openID = Animator.StringToHash("Open");
+
         [Header("References")]
-        [SerializeField] TriggerAnimationObj triggerAnimationObj;
+        [SerializeField] Animator animator;
         [SerializeField] Transform exitPoint;
 
+        [Header("Variables")] public bool exitTrigger = false;
+        
         // Properties
         public Transform ExitPoint => exitPoint;
 
         void Awake()
         {
-            if (triggerAnimationObj == null) triggerAnimationObj = GetComponent<TriggerAnimationObj>();
+            if (animator == null) animator = GetComponent<Animator>();
+            DungeonEventBus.Subscribe(DungeonEventType.ExitHallway, OpenDoor);
+            DungeonEventBus.Subscribe(DungeonEventType.EnterHallway, CloseDoor);
         }
 
-        public void TriggerAnimation()
+        public void OpenDoor()
         {
-            triggerAnimationObj.TriggerAnimation();
+            animator.SetBool(openID, true);
+        }
+        public void CloseDoor()
+        {
+            animator.SetBool(openID, false);
         }
     }
 }

@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using DarkestLike.InDungeon.Manager;
 using UnityEngine;
 
 namespace DarkestLike.Map
@@ -12,24 +13,24 @@ namespace DarkestLike.Map
         [SerializeField] RectTransform mapDrawArea;
 
         /// <summary>방 버튼의 RectTransform 프리팹</summary>
-        [SerializeField] MapTileRoomButton roomMapTilePrefab;
+        [SerializeField] MapRoomNode roomNodePrefab;
 
         /// <summary>타일 버튼의 RectTransform 프리팹</summary>
-        [SerializeField] MapTileUI tileMapTilePrefab;
+        [SerializeField] MapNode tileNodePrefab;
 
         [Header("variables")]
         /// <summary>방 버튼 간의 오프셋 거리</summary>
-        [SerializeField] float roomMapTileSize = 70.0f;
+        [SerializeField] float roomNodeSize = 70.0f;
 
         /// <summary>타일 버튼 간의 오프셋 거리</summary>
-        [SerializeField] float tileMapTileSize = 20.0f;
+        [SerializeField] float tileNodeSize = 20.0f;
 
         // variables
-        Dictionary<RoomData, MapTileRoomButton> roomMapTiles = new();
-        Dictionary<TileData, MapTileUI> tileMapTiles = new();
-        MapTileUI currentRoomMT;
-        MapTileUI currentTileMT;
-        List<MapTileUI> highlightedNearRoomTiles = new();
+        Dictionary<RoomData, MapRoomNode> roomNodes = new();
+        Dictionary<TileData, MapNode> tileNodes = new();
+        MapNode currentRoomNode;
+        MapNode currentTileNode;
+        List<MapNode> highlightedNearRoomNodes = new();
 
         /// <summary>
         /// 맵 데이터를 기반으로 방과 복도 타일들의 UI 버튼을 생성합니다.
@@ -38,8 +39,8 @@ namespace DarkestLike.Map
         public void GenerateButtons(MapData map)
         {
             if (map == null) return;
-            roomMapTiles.Clear();
-            tileMapTiles.Clear();
+            roomNodes.Clear();
+            tileNodes.Clear();
 
             // 1. 방 생성 (이미 생성된 방 제외)
             // 2. 복도의 다른 방 (이미 생성된 방 제외)
@@ -47,7 +48,7 @@ namespace DarkestLike.Map
 
             Vector2 mapRect = mapDrawArea.rect.size;
             Vector2 nextRoomPosition = Vector2.zero;
-            float distanceBetweenRooms = roomMapTileSize + map.TileCount * tileMapTileSize;
+            float distanceBetweenRooms = roomNodeSize + map.TileCount * tileNodeSize;
             
             // 모든 방을 순회하며 UI 버튼 생성
             for (int i = 0; i < map.Rooms.Count; i++)
@@ -60,7 +61,7 @@ namespace DarkestLike.Map
                     mapRect.y = Mathf.Abs(nextRoomPosition.y) * 2;
 
                 // 방 버튼이 아직 생성되지 않았다면 생성
-                if (!roomMapTiles.ContainsKey(newRoom))
+                if (!roomNodes.ContainsKey(newRoom))
                 {
                     CreateRoomMapTile(newRoom, nextRoomPosition);
                 }
@@ -68,7 +69,7 @@ namespace DarkestLike.Map
                 // 4방향 복도 확인 및 타일 버튼 생성
                 for (int j = 0; j < 4; j++)
                 {
-                    if (newRoom.ExitHallways[j] != null && !tileMapTiles.ContainsKey(newRoom.ExitHallways[j].Tiles[0]))
+                    if (newRoom.ExitHallways[j] != null && !tileNodes.ContainsKey(newRoom.ExitHallways[j].Tiles[0]))
                     {
                         Vector2 nextButtonPosition = nextRoomPosition;
                         
@@ -83,18 +84,18 @@ namespace DarkestLike.Map
                         };
 
                         // 복도 시작 위치로 이동
-                        nextButtonPosition += direction * roomMapTileSize * 0.5f;
+                        nextButtonPosition += direction * roomNodeSize * 0.5f;
 
                         HallwayData newHallway = newRoom.ExitHallways[j];
 
                         // 복도의 각 타일에 대해 버튼 생성
                         for (int k = 0; k < newHallway.Tiles.Length; k++)
                         {
-                            nextButtonPosition += direction * tileMapTileSize * 0.5f;
+                            nextButtonPosition += direction * tileNodeSize * 0.5f;
 
                             CreateTileButton(newHallway.Tiles[k], nextButtonPosition);
 
-                            nextButtonPosition += direction * tileMapTileSize * 0.5f;
+                            nextButtonPosition += direction * tileNodeSize * 0.5f;
                         }
                     }
                 }
@@ -103,63 +104,49 @@ namespace DarkestLike.Map
             mapDrawArea.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, mapRect.y + distanceBetweenRooms);
             SetCenter();
         }
-
-        /// <summary>
-        /// 방 데이터에 대한 UI 버튼을 생성합니다.
-        /// </summary>
-        /// <param name="roomData">방 데이터</param>
-        /// <param name="buttonPosition">버튼 위치</param>
+        
         private void CreateRoomMapTile(RoomData roomData, Vector2 buttonPosition)
         {
-            MapTileRoomButton roomUI = Instantiate(roomMapTilePrefab, mapDrawArea);
-            roomUI.SetTileSize(Vector2.one * roomMapTileSize);
+            MapRoomNode roomUI = Instantiate(roomNodePrefab, mapDrawArea);
+            roomUI.SetTileSize(Vector2.one * roomNodeSize);
             roomUI.UpdateImage(roomData.RoomType);
             roomUI.SetRoomData(roomData);
-            roomMapTiles.Add(roomData, roomUI);
+            roomNodes.Add(roomData, roomUI);
 
             roomUI.SetPosition(buttonPosition);
         }
 
-        /// <summary>
-        /// 타일 데이터에 대한 UI 버튼을 생성합니다.
-        /// </summary>
-        /// <param name="tileData">타일 데이터</param>
-        /// <param name="buttonPosition">버튼 위치</param>
         private void CreateTileButton(TileData tileData, Vector2 buttonPosition)
         {
-            MapTileUI tileUI = Instantiate(tileMapTilePrefab, mapDrawArea);
-            tileUI.SetTileSize(Vector2.one * tileMapTileSize);
-            tileUI.UpdateImage(tileData.type);
-            tileMapTiles.Add(tileData, tileUI);
+            MapNode node = Instantiate(tileNodePrefab, mapDrawArea);
+            node.SetTileSize(Vector2.one * tileNodeSize);
+            node.UpdateImage(tileData.type);
+            tileNodes.Add(tileData, node);
 
-            tileUI.SetPosition(buttonPosition);
+            node.SetPosition(buttonPosition);
         }
 
-        /// <summary>
-        /// 모든 버튼들을 화면 중앙에 배치합니다.
-        /// 방 버튼들의 중심점을 계산하여 모든 버튼을 중앙으로 이동시킵니다.
-        /// </summary>
         private void SetCenter()
         {
             // 방 버튼들의 중심점 계산
             Vector2 center = Vector2.zero;
-            foreach (var roomButton in roomMapTiles)
+            foreach (var roomButton in roomNodes)
             {
                 center += roomButton.Value.AnchoredPosition;
             }
-            center /= roomMapTiles.Count;
+            center /= roomNodes.Count;
 
             // 중앙으로 이동할 벡터 계산
             Vector2 moveVector = Vector2.zero - center;
 
             // 모든 방 버튼을 중앙으로 이동
-            foreach (var roomButton in roomMapTiles)
+            foreach (var roomButton in roomNodes)
             {
                 roomButton.Value.SetPosition(roomButton.Value.AnchoredPosition + moveVector);
             }
 
             // 모든 타일 버튼을 중앙으로 이동
-            foreach (var tileButton in tileMapTiles)
+            foreach (var tileButton in tileNodes)
             {
                 tileButton.Value.SetPosition(tileButton.Value.AnchoredPosition + moveVector);
             }
@@ -167,14 +154,14 @@ namespace DarkestLike.Map
 
         public void HighlightRoom(RoomData roomData)
         {
-            if (currentRoomMT != null)
-                currentRoomMT.ActiveTileHighlight_Color(false);
-            if (currentTileMT != null)
-                currentTileMT.ActiveTileHighlight_Scale(false);
-            if (roomMapTiles.TryGetValue(roomData, out MapTileRoomButton roomMT))
+            if (currentRoomNode != null)
+                currentRoomNode.ActiveTileHighlight_Color(false);
+            if (currentTileNode != null)
+                currentTileNode.ActiveTileHighlight_Scale(false);
+            if (roomNodes.TryGetValue(roomData, out MapRoomNode roomMT))
             {
-                currentRoomMT = roomMT;
-                currentRoomMT.ActiveTileHighlight_Color(true);
+                currentRoomNode = roomMT;
+                currentRoomNode.ActiveTileHighlight_Color(true);
             }
         }
 
@@ -187,45 +174,61 @@ namespace DarkestLike.Map
 
         public void LoopHighlightRoom(RoomData roomData)
         {
-            if (roomMapTiles.TryGetValue(roomData, out MapTileRoomButton roomMT))
+            if (roomNodes.TryGetValue(roomData, out MapRoomNode roomMT))
             {
-                highlightedNearRoomTiles.Add(roomMT);
+                highlightedNearRoomNodes.Add(roomMT);
                 roomMT.ActiveLoopHighlight_Color();
             }
         }
 
         public void ClearHighlight()
         {
-            if (highlightedNearRoomTiles.Count == 0) return;
-            while (highlightedNearRoomTiles.Count > 0)
+            if (highlightedNearRoomNodes.Count == 0) return;
+            while (highlightedNearRoomNodes.Count > 0)
             {
-                highlightedNearRoomTiles[highlightedNearRoomTiles.Count - 1].ResetHighlight();
-                highlightedNearRoomTiles.RemoveAt(highlightedNearRoomTiles.Count - 1);
+                highlightedNearRoomNodes[highlightedNearRoomNodes.Count - 1].ResetHighlight();
+                highlightedNearRoomNodes.RemoveAt(highlightedNearRoomNodes.Count - 1);
             }
 
-            if (currentRoomMT != null)
+            if (currentRoomNode is not null)
             {
-                currentRoomMT.ActiveTileHighlight_Color(false);
-                currentRoomMT = null;
+                currentRoomNode.ActiveTileHighlight_Color(false);
+                currentRoomNode = null;
             }
-            if (currentTileMT != null)
+            if (currentTileNode is not null)
             {
-                currentTileMT.ActiveTileHighlight_Scale(false);
-                currentTileMT = null;
+                currentTileNode.ActiveTileHighlight_Scale(false);
+                currentTileNode = null;
             }
         }
 
-        public void HighlightTile(TileData tileData)
+        public void HighlightCurrentTile()
         {
-            if (currentTileMT != null)
-                currentTileMT.ActiveTileHighlight_Scale(false);
-            if (currentRoomMT != null)
-                currentRoomMT.ActiveTileHighlight_Color(false);
-            if (tileMapTiles.TryGetValue(tileData, out MapTileUI tileMT))
+            TileData tileData = InDungeonManager.Inst.CurrentTile;
+            if (tileData == null) return;
+            if (currentTileNode != null)
+                currentTileNode.ActiveTileHighlight_Scale(false);
+            if (currentRoomNode != null)
+                currentRoomNode.ActiveTileHighlight_Color(false);
+            if (tileNodes.TryGetValue(tileData, out MapNode tileMT))
             {
-                currentTileMT = tileMT;
-                currentTileMT.ActiveTileHighlight_Scale(true);
+                currentTileNode = tileMT;
+                currentTileNode.ActiveTileHighlight_Scale(true);
             }
+        }
+
+        public void ActiveRoomButtonsInteractive(bool active)
+        {
+            foreach (MapRoomNode mapBtn in roomNodes.Values)
+            {
+                mapBtn.button.interactable = active;
+            }
+        }
+
+        public void ActiveMapButtonInteractive(RoomData roomData, bool active)
+        {
+            if (roomNodes.TryGetValue(roomData, out MapRoomNode roomBtn))
+                roomBtn.button.interactable = active;
         }
     }
 }

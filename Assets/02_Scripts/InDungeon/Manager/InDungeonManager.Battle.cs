@@ -1,12 +1,11 @@
 using DarkestLike.Character;
 using DarkestLike.InDungeon.BattleSystem;
 using DarkestLike.Map;
-using DarkestLike.Singleton;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace DarkestLike.InDungeon
+namespace DarkestLike.InDungeon.Manager
 {
     public partial class InDungeonManager
     {
@@ -14,9 +13,9 @@ namespace DarkestLike.InDungeon
         /// 배틀 시작 (예외처리 포함)
         /// </summary>
         /// <param name="enemyGroup">적 그룹</param>
-        private void StartBattle(EnemyGroup enemyGroup)
+        public void StartBattle(EnemyGroup enemyGroup)
         {
-            characterContainer.ActiveFreeze(true);
+            partyCtrl.ActiveFreeze(true);
             cameraSubsystem.SetCameraTarget(battleSubsystem.BattleCamTrf);
             List<CharacterData> enemyData = enemyGroup?.Enemies;
 
@@ -28,12 +27,12 @@ namespace DarkestLike.InDungeon
                 return;
             }
             if (mapSubsystem.CurrentLocation == CurrentLocation.Room)
-                battleSubsystem.StartBattle(unitSubsystem.CharacterUnits, enemyData, Vector3.zero);
+                battleSubsystem.StartBattle(partyCtrl.CharacterUnits, enemyData, Vector3.zero);
             else if (mapSubsystem.CurrentLocation == CurrentLocation.Hallway)
-                battleSubsystem.StartBattle(unitSubsystem.CharacterUnits, enemyData, mapSubsystem.CurrentTilePosition);
+                battleSubsystem.StartBattle(partyCtrl.CharacterUnits, enemyData, mapSubsystem.CurrentTile.Position);
         }
 
-        public void SelectEnemyUnit(CharacterUnit.CharacterUnit enemyUnit)
+        public void SelectEnemyUnit(Unit.CharacterUnit enemyUnit)
         {
             battleSubsystem.SelectEnemy(enemyUnit);
         }

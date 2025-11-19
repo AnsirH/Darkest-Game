@@ -1,5 +1,5 @@
 using DarkestLike.Character;
-using DarkestLike.InDungeon.CharacterUnit;
+using DarkestLike.InDungeon.Unit;
 using DarkestLike.Map;
 using System.Collections;
 using System.Collections.Generic;
@@ -7,6 +7,10 @@ using UnityEngine;
 
 namespace DarkestLike.InDungeon.BattleSystem
 {
+    // Battle Subsystem: 배틀 시스템을 실행하고 관리하는 객체.
+    // 배틀 시작
+    // 배틀 프로세스
+    // 배틀 종료
     public class BattleSubsystem : InDungeonSubsystem
     {
         [Header("References")]
@@ -17,12 +21,12 @@ namespace DarkestLike.InDungeon.BattleSystem
         private bool isBattleActive = false;
         
         // 선택 상태 관리
-        private CharacterUnit.CharacterUnit selectedEnemyUnit = null;
+        private Unit.CharacterUnit selectedEnemyUnit = null;
 
         // Properties
         public bool IsBattleActive => isBattleActive;
         public Transform BattleCamTrf => battleStage.BattleCamTrf;
-        public CharacterUnit.CharacterUnit SelectedEnemyUnit => selectedEnemyUnit;
+        public Unit.CharacterUnit SelectedEnemyUnit => selectedEnemyUnit;
 
         private void Update()
         {
@@ -31,7 +35,7 @@ namespace DarkestLike.InDungeon.BattleSystem
                 RaycastHit hit;
                 if (Physics.Raycast(Camera.main.ScreenPointToRay(Input.mousePosition), out hit, Mathf.Infinity, LayerMask.GetMask("CharacterUnit")))
                 {
-                    SelectEnemy(hit.collider.GetComponent<CharacterUnit.CharacterUnit>());
+                    SelectEnemy(hit.collider.GetComponent<Unit.CharacterUnit>());
                 }
                 else
                 {
@@ -52,7 +56,7 @@ namespace DarkestLike.InDungeon.BattleSystem
         /// 배틀을 시작합니다.
         /// </summary>
         /// <param name="enemyData">적 데이터 리스트</param>
-        public void StartBattle(List<CharacterUnit.CharacterUnit> playerUnits, List<CharacterData> enemyData, Vector3 stagePosition)
+        public void StartBattle(List<Unit.CharacterUnit> playerUnits, List<CharacterData> enemyData, Vector3 stagePosition)
         {
             if (isBattleActive) 
             {
@@ -73,7 +77,7 @@ namespace DarkestLike.InDungeon.BattleSystem
             }
 
             // BattleStage 초기화
-            if (battleStage != null)
+            if (battleStage is not null)
             {
                 battleStage.InitializeBattleStage(playerUnits, enemyData, stagePosition);
                 isBattleActive = true;
@@ -109,7 +113,7 @@ namespace DarkestLike.InDungeon.BattleSystem
         /// 적 유닛을 선택합니다.
         /// </summary>
         /// <param name="enemyUnit">선택할 적 유닛</param>
-        public void SelectEnemy(CharacterUnit.CharacterUnit enemyUnit)
+        public void SelectEnemy(Unit.CharacterUnit enemyUnit)
         {
             if (!isBattleActive)
             {

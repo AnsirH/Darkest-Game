@@ -41,6 +41,7 @@ namespace DarkestLike.InDungeon
         }
 
         public void SetTarget(Transform newTarget) { targetPoint = newTarget; }
-        public void SetMoveTime(float moveTime) { this.moveTime = moveTime; }
+        public void SetMoveTime(float newMoveTime) { this.moveTime = newMoveTime; }
+        public void SetPosition(Vector3 newPosition) { transform.position = newPosition; }
     }
 }

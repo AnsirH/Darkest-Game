@@ -2,6 +2,7 @@ using DarkestLike.Map;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 [CreateAssetMenu(fileName = "DungeonData", menuName = "Create Data Asset/Create Dungeon Data")]
 public class DungeonData : ScriptableObject
@@ -10,7 +11,7 @@ public class DungeonData : ScriptableObject
 
     public MapThemeData ThemeData;
 
-    public List<MapSOData> MapDatas;
+    public List<MapSOData> MapSODatas;
 
     public MapSOData BossMap;
 

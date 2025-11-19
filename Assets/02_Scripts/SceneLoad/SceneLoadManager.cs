@@ -5,6 +5,7 @@ using DarkestLike.Singleton;
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using DarkestLike.InDungeon.Manager;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -92,63 +93,7 @@ namespace DarkestLike.SceneLoad
 
             await UniTask.Yield();
 
-            InDungeonManager.Inst.EnterDungeon(mapData);
-        }
-
-        public async UniTaskVoid LoadRoomScene()
-        {
-            await SceneManager.LoadSceneAsync("Loading Scene").ToUniTask();
-
-            pressAnyKeyObj.SetActive(false);
-
-            // 씬 비동기 로드 (활성화는 나중에)
-            AsyncOperation loadOperation = SceneManager.LoadSceneAsync("Room Scene");
-            loadOperation.allowSceneActivation = false;
-
-            // 씬 로드 완료 상태까지 대기
-            while (loadOperation.progress < 0.9f)
-            {
-                await UniTask.Yield();
-            }
-
-            pressAnyKeyObj.SetActive(true);
-
-            // 아무 키 입력 대기
-            await WaitForAnyKey();
-
-            pressAnyKeyObj.SetActive(false);
-
-            // 씬 활성화
-            loadOperation.allowSceneActivation = true;
-            InDungeonManager.Inst.CompleteRoomEntering();
-        }
-
-        public async UniTaskVoid LoadHallwayScene()
-        {
-            await SceneManager.LoadSceneAsync("Loading Scene").ToUniTask();
-
-            pressAnyKeyObj.SetActive(false);
-
-            // 씬 비동기 로드 (활성화는 나중에)
-            AsyncOperation loadOperation = SceneManager.LoadSceneAsync("Hallway Scene");
-            loadOperation.allowSceneActivation = false;
-
-            // 씬 로드 완료 상태까지 대기
-            while (loadOperation.progress < 0.9f)
-            {
-                await UniTask.Yield();
-            }
-
-            pressAnyKeyObj.SetActive(true);
-
-            // 아무 키 입력 대기
-            await WaitForAnyKey();
-
-            pressAnyKeyObj.SetActive(false);
-
-            // 씬 활성화
-            loadOperation.allowSceneActivation = true;
-            InDungeonManager.Inst.CompleteHallwayEntering();
+            // InDungeonManager.Inst.EnterDungeon(mapData, ); // 유닛을 관리하는 매니저 추가 필요
         }
     }
 }

@@ -27,7 +27,7 @@ public class Dungeon
         this.level = level;
         this.exp = exp;
         // 던전은 첫 번째 맵을 기본적으로 선택한다.
-        selectedMap = new() { MapGenerator.GenerateMap(data.MapDatas[0], level) };
+        selectedMap = new() { MapGenerator.GenerateMap(data.MapSODatas[0], level) };
     }
 
     public void Complete(MapData completedMap)

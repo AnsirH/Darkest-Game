@@ -79,26 +79,22 @@ namespace DarkestLike.Map
     [System.Serializable]
     public class RoomData
     {
-        /// <summary>방의 위치 (격자 좌표)</summary>
         public Vector2Int Position { get; private set; }
 
-        /// <summary>방의 타입</summary>
         public RoomType RoomType { get; private set; }
 
-        /// <summary>4방향 복도 배열 (상, 좌, 우, 하)</summary>
         public HallwayData[] ExitHallways { get; private set; } = new HallwayData[4];
 
-        /// <summary>방에 등장하는 적 그룹</summary>
         private EnemyGroup enemyGroup;
 
         public string SceneName { get; private set; }
 
-        /// <summary>방에 등장하는 적 그룹 (읽기 전용)</summary>
         public EnemyGroup EnemyGroup => enemyGroup;
 
-        /// <summary>방에 적이 있는지 확인</summary>
         public bool HasEnemies => enemyGroup != null && enemyGroup.Enemies.Count > 0;
 
+        public bool IsBattleTile => RoomType == RoomType.Monster || RoomType == RoomType.MonsterAndItem;
+        
         public List<HallwayData> ValidExitHallway
         {
             get
@@ -275,6 +271,16 @@ namespace DarkestLike.Map
             }
             return -1;
         }
+
+        public TileData GetNextTile(TileData currentTile)
+        {
+            return Tiles[GetTileIndex(currentTile) + 1];
+        }
+
+        public TileData GetPreviousTile(TileData currentTile)
+        {
+            return Tiles[GetTileIndex(currentTile) - 1];
+        }
     }
 
     /// <summary>
@@ -282,31 +288,26 @@ namespace DarkestLike.Map
     /// </summary>
     public class TileData
     {
-        /// <summary>타일의 타입</summary>
         public TileType type;
-
-        /// <summary>방에 등장하는 적 그룹</summary>
         public EnemyGroup EnemyGroup { get; private set; }
+        public Vector3 Position { get; private set; }
 
-        /// <summary>
-        /// 타일 데이터 생성자
-        /// </summary>
-        /// <param name="type">타일 타입</param>
         public TileData(TileType type, EnemyGroup enemyGroup)
         {
             this.type = type;
             EnemyGroup = enemyGroup;
         }
 
-        /// <summary>
-        /// 타일 타입을 변경합니다.
-        /// </summary>
-        /// <param name="newType">새로운 타일 타입</param>
         public void SetType(TileType newType)
         {
             type = newType;
         }
 
+        public void SetPosition(Vector3 position)
+        {
+            Position = position;
+        }
+        
         /// <summary>
         /// 적 그룹 설정
         /// </summary>

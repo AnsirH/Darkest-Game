@@ -5,7 +5,7 @@ using UnityEngine.UI;
 
 namespace DarkestLike.Map
 {
-    public class MapTileUI : MonoBehaviour
+    public class MapNode : MonoBehaviour
     {
         [Header("references")]
         [SerializeField] RectTransform rect;

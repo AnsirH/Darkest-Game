@@ -5,6 +5,7 @@ using UnityEngine;
 
 namespace DarkestLike.Character
 {
+    
     public class CharacterData
     {
         public CharacterStats Stats;

@@ -6,8 +6,9 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.EventSystems;
+using UnityEngine.Pool;
 
-namespace DarkestLike.InDungeon.CharacterUnit
+namespace DarkestLike.InDungeon.Unit
 {
     /// <summary>
     /// 캐릭터의 3D 표현과 데이터를 관리하는 클래스
@@ -35,18 +36,12 @@ namespace DarkestLike.InDungeon.CharacterUnit
         public int MaxHealth => characterData?.MaxHealth ?? 0;
         public bool IsAlive => characterData?.IsAlive ?? false;
         public bool IsEnemyUnit => isEnemyUnit;
-
-        private void Awake()
-        {
-            if (positionMaintainer == null) positionMaintainer = GetComponent<PositionMaintainer>();
-            if (animationController == null) animationController = GetComponent<CharacterAnimationController>();
-        }
-
+        
         /// <summary>
         /// CharacterData를 기반으로 CharacterUnit을 초기화합니다.
         /// </summary>
         /// <param name="characterData">캐릭터의 데이터</param>
-        public void Initialize(CharacterData characterData)
+        public void Initialize(CharacterData characterData, Transform positionTarget)
         {
             if (characterData == null)
             {
@@ -64,6 +59,8 @@ namespace DarkestLike.InDungeon.CharacterUnit
             {
                 Debug.LogWarning($"CharacterBase {characterData.Base.name}의 ModelPrefab이 설정되지 않았습니다.");
             }
+            
+            positionMaintainer.SetTarget(positionTarget);
         }
 
         /// <summary>

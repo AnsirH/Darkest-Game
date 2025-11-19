@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
-namespace DarkestLike.InDungeon.CharacterUnit
+namespace DarkestLike.InDungeon.Unit
 {
     public class CharacterUnitHUD : MonoBehaviour
     {

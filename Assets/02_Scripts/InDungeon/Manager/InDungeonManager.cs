@@ -11,75 +11,52 @@ using DarkestLike.Character;
 using DarkestLike.InDungeon.Hallway;
 using DarkestLike.InDungeon.CameraControl;
 
-namespace DarkestLike.InDungeon
+namespace DarkestLike.InDungeon.Manager
 {
+    // 던전 씬에서 던전 진행 여부를 관리하는 객체
+    // 던전 입장
+    // 던전 진행 상태 업데이트
+    // 던전 종료
     public partial class InDungeonManager : Singleton<InDungeonManager>
     {
         [Header("Subsystem")]
-        [SerializeField] InDungeonMapSubsystem mapSubsystem;
-        [SerializeField] InDungeonUISubsystem UISubsystem;
+        [SerializeField] MapSubsystem mapSubsystem;
+        [SerializeField] UISubsystem uiSubsystem;
         [SerializeField] BattleSubsystem battleSubsystem;
         [SerializeField] HallwaySubsystem hallwaySubsystem;
         [SerializeField] CameraSubsystem cameraSubsystem;
         [SerializeField] UnitSubsystem unitSubsystem;
 
         [Header("References")]
-        [SerializeField] CharacterContainerController characterContainer;
+        [SerializeField] PartyController partyCtrl;
         [SerializeField] MapSOData mapSOData;
-        // Events
-        public event Action<RoomData> OnRoomEntered;
-        public event Action<HallwayData> OnHallwayEntered;
-        public event Action<TileData> OnTileEntered;
 
         // Variables
 
         // Properties
-
-        // 던전 매니저 Awake에서 던전 입장 로직 실행
-        protected override void Awake()
-        {
-            base.Awake();
-            //SceneLoadManager.Inst.OnLoadedSceneActivated += OnSceneLoadedHandler;
-        }
-
-        // 맵의 첫 번째 방으로
-        void Start()
-        {
-            EnterDungeon(mapSOData);
-            StartBattle(EnemyGroupGenerator.GenerateEnemyGroupForRoom(mapSOData, 0));
-            //battleSubsystem.StartBattle(
-            //    unitSubsystem.CharacterUnits,
-            //    EnemyGroupGenerator.GenerateEnemyGroupForRoom(mapSOData, 0).Enemies, 
-            //    Vector3.right * mapSubsystem.TileWorldDistance * 0.5f);
-        }
+        /// <summary> Character Container Controller /// </summary>
+        public PartyController PartyCtrl => partyCtrl;
+        public RoomData CurrentRoom => mapSubsystem.CurrentRoom;
+        public TileData CurrentTile => mapSubsystem.CurrentTile;
 
         //void OnSceneLoadedHandler(string sceneName)
         //{
         //}
 
-        // 던전 입장( room scene 자체 테스트용 )
-        void EnterDungeon(MapSOData mapSOData)
-        {
-            InitializeSubsystems();
-            mapSubsystem.SetMapData(MapGenerator.GenerateMap(mapSOData, 0));
-            UISubsystem.GenerateMapUI(mapSubsystem.MapData);
-            mapSubsystem.SetCurrentRoomData(mapSubsystem.MapData.StartRoom);
-            CompleteRoomEntering();
-        }
-
-        public void EnterDungeon(MapData mapData)
+        // 던전 입장
+        public void EnterDungeon(MapData mapData, List<CharacterData> characterDatas)
         {
             InitializeSubsystems();
             mapSubsystem.SetMapData(mapData);
-            UISubsystem.GenerateMapUI(mapSubsystem.MapData);
-            mapSubsystem.SetCurrentRoomData(mapSubsystem.MapData.StartRoom);
-            CompleteRoomEntering();
+            uiSubsystem.GenerateMapUI(mapSubsystem.MapData);
+            unitSubsystem.SetCharacterDatas(characterDatas);
+            EnterRoom(mapData.StartRoom);
         }
 
         void InitializeSubsystems()
         {
             mapSubsystem.Initialize();
-            UISubsystem.Initialize();
+            uiSubsystem.Initialize();
             battleSubsystem.Initialize();
             hallwaySubsystem.Initialize();
             cameraSubsystem.Initialize();
@@ -87,93 +64,70 @@ namespace DarkestLike.InDungeon
         }
 
         #region Enter Room
-        public void EnterRoom()
+        public void EnterRoom(RoomData roomData)
         {
-            if (mapSubsystem.CurrentLocation != CurrentLocation.Hallway) return;
-            UISubsystem.MapDrawer.ClearHighlight();
-            mapSubsystem.SetCurrentRoomData(mapSubsystem.CurrentHallway.ExitRoom);
-            hallwaySubsystem.ActiveExitDoor(false);
-            StartCoroutine(EnterRoomCoroutine());
+            StartCoroutine(EnterRoomCoroutine(roomData));
+        }
+        
+        public void EnterExitRoom()
+        {
+            if (CurrentTile == null) return;
+            
+            EnterRoom(mapSubsystem.CurrentHallway.ExitRoom);
+            DungeonEventBus.Publish(DungeonEventType.ExitHallway);
         }
 
-        IEnumerator EnterRoomCoroutine()
+        // 룸에 들어가는 로직
+        // 페이드인 포함
+        // 페이드 이후 EnterRoom 이벤트 발행
+        private IEnumerator EnterRoomCoroutine(RoomData roomData)
         {
-            yield return StartCoroutine(hallwaySubsystem.EnterRoomProcess(unitSubsystem.CharacterUnits));
+            mapSubsystem.SetRoomData(roomData);
 
-            yield return StartCoroutine(UISubsystem.FadeOutCoroutine(true));
-
-            UISubsystem.ActiveBattleHud(false);
-            UISubsystem.ActiveMapDrawer(false);
-
-            SceneLoadManager.Inst.LoadRoomScene().Forget();
-        }
-
-        public void CompleteRoomEntering()
-        {
-            // 몬스터 방 타입 체크
-            if (mapSubsystem.CurrentRoom.RoomType == RoomType.Monster || 
-                mapSubsystem.CurrentRoom.RoomType == RoomType.MonsterAndItem)
+            yield return StartCoroutine(uiSubsystem.FadeOutCoroutine(false, 1));
+            
+            DungeonEventBus.Publish(DungeonEventType.EnterRoom);
+            // 배틀 확인
+            if (roomData.IsBattleTile)
             {
-                StartBattle(mapSubsystem.CurrentRoom.EnemyGroup);
+                StartBattle(roomData.EnemyGroup);
             }
-            StartCoroutine(UISubsystem.FadeOutCoroutine(false));
-            OnRoomEntered?.Invoke(mapSubsystem.CurrentRoom);
-            characterContainer.ResetPosition();
+            else
+            {
+                uiSubsystem.MapDrawer.HighlightNearRooms(roomData);
+            }
         }
-#endregion
+        #endregion
 
         #region Enter Hallway
-        public void EnterHallway(RoomData targetRoomData)
+        public void StartEnteringHallway(RoomData targetRoomData)
         {
             if (targetRoomData == null) return;
-            UISubsystem.MapDrawer.ClearHighlight();
-            mapSubsystem.SetHallwayDataByRoomData(targetRoomData);
-            StartCoroutine(EnterHallwayCoroutine());
+            DungeonEventBus.Publish(DungeonEventType.Loading);
+            StartCoroutine(EnterHallwayCoroutine(targetRoomData));
         }
 
-        IEnumerator EnterHallwayCoroutine()
+        IEnumerator EnterHallwayCoroutine(RoomData targetRoomData)
         {
-            yield return StartCoroutine(UISubsystem.FadeOutCoroutine(true));
+            yield return StartCoroutine(uiSubsystem.FadeOutCoroutine(true, 1));
 
-            UISubsystem.ActiveBattleHud(false);
-            UISubsystem.ActiveMapDrawer(false);
-
-            SceneLoadManager.Inst.LoadHallwayScene().Forget();
-        }
-
-        public void CompleteHallwayEntering()
-        {
-            // 몬스터 타일 타입 체크
-            if (mapSubsystem.CurrentTile.type == TileType.Monster)
-            {
-                StartBattle(mapSubsystem.CurrentTile.EnemyGroup);
-            }
-
-            float hallwayLength = mapSubsystem.CurrentHallway.Tiles.Length * mapSubsystem.TileWorldDistance;
-            hallwaySubsystem.SetHallway(characterContainer, hallwayLength, mapSubsystem.TileWorldDistance);
-            cameraSubsystem.SetCameraMovementLimit(hallwayLength - mapSubsystem.TileWorldDistance);
-            characterContainer.ResetPosition();
-            cameraSubsystem.SetCameraTarget(characterContainer.CamTrf);
-            OnTileEntered?.Invoke(mapSubsystem.CurrentTile);
-        }
-
-        public void EnterTheTile(int tileIndex)
-        {
-            if (mapSubsystem.CurrentLocation != CurrentLocation.Hallway) return;
-            if (tileIndex >= mapSubsystem.CurrentHallway.Tiles.Length) return;
-            if (mapSubsystem.EnterTheTile(mapSubsystem.CurrentHallway.Tiles[tileIndex]))
-            {
-                // 몬스터 타일 타입 체크
-                if (mapSubsystem.CurrentTile.type == TileType.Monster)
-                {
-                    StartBattle(mapSubsystem.CurrentTile.EnemyGroup);
-                }
-
-                OnTileEntered?.Invoke(mapSubsystem.CurrentTile);
-            }
+            mapSubsystem.SetHallwayData(mapSubsystem.CurrentRoom.GetExitHallway(targetRoomData));
+            
+            float hallwayLength = mapSubsystem.CurrentHallway.Tiles.Length * mapSubsystem.TileLength;
+            cameraSubsystem.SetCameraMovementLimit(hallwayLength);
+            
+            yield return new WaitForSeconds(0.5f);
+            
+            yield return StartCoroutine(uiSubsystem.FadeOutCoroutine(false, 1));
+            
+            DungeonEventBus.Publish(DungeonEventType.EnterHallway);
         }
 
         #endregion
 
+        public void FadeOut(float duration)
+        {
+            StartCoroutine(uiSubsystem.FadeOutCoroutine(true, duration));
+        }
     }
 }

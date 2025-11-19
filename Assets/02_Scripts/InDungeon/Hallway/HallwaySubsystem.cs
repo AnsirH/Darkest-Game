@@ -1,4 +1,4 @@
-using DarkestLike.InDungeon.CharacterUnit;
+using DarkestLike.InDungeon.Unit;
 using DarkestLike.InDungeon.Object;
 using DarkestLike.Map;
 using System.Collections;
@@ -17,22 +17,20 @@ namespace DarkestLike.InDungeon.Hallway
         [SerializeField] float fadeDuration;
 
         // Variables
-        private CharacterContainerController characterContainer;
+        private PartyController party;
 
         public void ActiveExitDoor(bool active) { exitDoor.gameObject.SetActive(active); }
 
-        public void SetHallway(CharacterContainerController characterContainer, float moveableDistance, float tileDistance)
+        public void SetHallway(PartyController party, float moveableDistance, float tileDistance)
         {
             ActiveExitDoor(true);
             exitDoor.transform.position = Vector3.right * (moveableDistance + tileDistance * 0.5f);
-            this.characterContainer = characterContainer;
-            characterContainer.SetMoveGround(moveableDistance, tileDistance);
+            this.party = party;
+            // characterContainer.SetMoveGround(moveableDistance, tileDistance);
         }
 
-        public IEnumerator EnterRoomProcess(List<CharacterUnit.CharacterUnit> characterUnits)
+        public IEnumerator EnterRoomProcess(List<Unit.CharacterUnit> characterUnits)
         {
-            exitDoor.TriggerAnimation();
-
             float moveTime = 1.0f;
             for (int i = 0; i < characterUnits.Count; ++i)
             {
