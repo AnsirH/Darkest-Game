@@ -92,7 +92,7 @@ namespace DarkestLike.Map
             exitDoor.gameObject.SetActive(true);
             float moveableDistance = tileLength * currentHallway.Tiles.Length + tileLength * 0.5f;
             exitDoor.transform.position = Vector3.right * moveableDistance;
-            party.SetMoveGround(moveableDistance);
+            party.SetMovableLimit(moveableDistance);
             party.ResetPosition();
         }
 
@@ -167,7 +167,7 @@ namespace DarkestLike.Map
             yield return new WaitForSeconds(transitionTime);
             
             characterController.ResetPosition();
-            characterController.SetMoveGround(tileLength);
+            characterController.SetMovableLimit(tileLength);
         }
         
         // public void MoveToHallway()

@@ -71,14 +71,12 @@ namespace DarkestLike.InDungeon
             {
                 movement.MoveForDeltaTime(input.MoveHorizontalInputRaw * 0.5f * horizontalVector);
             }
-            
-            
         }
         
-        public void SetMoveGround(float moveableDistance)
+        public void SetMovableLimit(float movableDistance)
         {
             Vector3 startPoint = Vector3.zero, endPoint = Vector3.zero;
-            endPoint.x = moveableDistance;
+            endPoint.x = movableDistance;
             movement.UpdateLimit(startPoint, endPoint);
 
             isSetMoveGround = true;
@@ -92,6 +90,7 @@ namespace DarkestLike.InDungeon
         public void ResetPosition()
         {
             transform.position = Vector3.zero;
+            
         }
 
         private IEnumerator MoveToExitDoor()
@@ -102,7 +101,7 @@ namespace DarkestLike.InDungeon
             for (int i = 0; i < newPositions.Length; ++i)
                 newPositions[i] = positionTargets[i].localPosition;
 
-            InDungeonManager.Inst.FadeOut(3);
+            InDungeonManager.Inst.FadeOut(2);
             float timer = 0.0f;
             while (timer < 3.0f)
             {
@@ -113,10 +112,18 @@ namespace DarkestLike.InDungeon
                 yield return null;
             }
 
+            ResetPosition();
             for (int i = 0; i < positionTargets.Length; ++i)
                 positionTargets[i].localPosition = newPositions[i];
+            ResetMembersPosition();
             isFreeze = false;
             InDungeonManager.Inst.EnterExitRoom();
+        }
+
+        public void ResetMembersPosition()
+        {
+            for (int i = 0; i < characterUnits.Count; ++i)
+                characterUnits[i].SetPositionToTarget();
         }
 
         private void OnTriggerEnter(Collider other)

@@ -38,6 +38,7 @@ namespace DarkestLike.InDungeon.Manager
         public PartyController PartyCtrl => partyCtrl;
         public RoomData CurrentRoom => mapSubsystem.CurrentRoom;
         public TileData CurrentTile => mapSubsystem.CurrentTile;
+        public CurrentLocation CurrentLocation => mapSubsystem.CurrentLocation;
 
         //void OnSceneLoadedHandler(string sceneName)
         //{
@@ -83,6 +84,8 @@ namespace DarkestLike.InDungeon.Manager
         private IEnumerator EnterRoomCoroutine(RoomData roomData)
         {
             mapSubsystem.SetRoomData(roomData);
+            partyCtrl.SetMovableLimit(5);
+            cameraSubsystem.SetToRoomTarget();
 
             yield return StartCoroutine(uiSubsystem.FadeOutCoroutine(false, 1));
             
@@ -103,7 +106,6 @@ namespace DarkestLike.InDungeon.Manager
         public void StartEnteringHallway(RoomData targetRoomData)
         {
             if (targetRoomData == null) return;
-            DungeonEventBus.Publish(DungeonEventType.Loading);
             StartCoroutine(EnterHallwayCoroutine(targetRoomData));
         }
 
@@ -111,10 +113,13 @@ namespace DarkestLike.InDungeon.Manager
         {
             yield return StartCoroutine(uiSubsystem.FadeOutCoroutine(true, 1));
 
+            DungeonEventBus.Publish(DungeonEventType.Loading);
             mapSubsystem.SetHallwayData(mapSubsystem.CurrentRoom.GetExitHallway(targetRoomData));
+            partyCtrl.ResetMembersPosition();
             
             float hallwayLength = mapSubsystem.CurrentHallway.Tiles.Length * mapSubsystem.TileLength;
             cameraSubsystem.SetCameraMovementLimit(hallwayLength);
+            cameraSubsystem.SetToPartyTarget();
             
             yield return new WaitForSeconds(0.5f);
             

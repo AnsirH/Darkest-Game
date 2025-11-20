@@ -18,34 +18,22 @@ namespace DarkestLike.InDungeon.CameraControl
         {
         }
 
-        void OnEnable()
-        {
-            DungeonEventBus.Subscribe(DungeonEventType.EnterRoom, EnterRoomHandler);
-            DungeonEventBus.Subscribe(DungeonEventType.EnterHallway, EnterHallwayHandler);
-        }
-
-        private void OnDisable()
-        {
-            DungeonEventBus.Unsubscribe(DungeonEventType.EnterRoom, EnterRoomHandler);
-            DungeonEventBus.Unsubscribe(DungeonEventType.EnterHallway, EnterHallwayHandler);
-        }
-
         public void SetCameraTarget(Transform target) { camPositionMaintainer.SetTarget(target); }
 
         public void SetCameraMovementLimit(float limit) { camPositionMaintainer.SetLimitXPosition(limit); }
 
-        #region Event Methods
-        void EnterRoomHandler()
+        public void SetToRoomTarget()
         {
             SetCameraTarget(roomCamTarget);
-            camPositionMaintainer.SetPosition(roomCamTarget.position);
+            camPositionMaintainer.isLimited = false;
+            camPositionMaintainer.SetPositionToTarget();
         }
 
-        void EnterHallwayHandler()
+        public void SetToPartyTarget()
         {
             SetCameraTarget(partyCamTarget);
-            camPositionMaintainer.SetPosition(partyCamTarget.position);
+            camPositionMaintainer.isLimited = true;
+            camPositionMaintainer.SetPositionToTarget();
         }
-        #endregion
     }
 }

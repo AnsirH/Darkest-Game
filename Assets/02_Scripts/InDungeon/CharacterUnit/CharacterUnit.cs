@@ -60,7 +60,9 @@ namespace DarkestLike.InDungeon.Unit
                 Debug.LogWarning($"CharacterBase {characterData.Base.name}의 ModelPrefab이 설정되지 않았습니다.");
             }
             
+            transform.rotation = positionTarget.rotation;
             positionMaintainer.SetTarget(positionTarget);
+            positionMaintainer.SetPositionToTarget();
         }
 
         /// <summary>
@@ -72,7 +74,12 @@ namespace DarkestLike.InDungeon.Unit
         {
             positionMaintainer.SetTarget(target);
             positionMaintainer.SetMoveTime(moveSpeed);
-        }        
+        }
+
+        public void SetPositionToTarget()
+        {
+            positionMaintainer.SetPositionToTarget();
+        }
 
         /// <summary>
         /// 캐릭터를 회복시킵니다.
