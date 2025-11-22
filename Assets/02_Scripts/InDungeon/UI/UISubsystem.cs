@@ -15,9 +15,6 @@ namespace DarkestLike.InDungeon.UI
         [SerializeField] BattleHud battleHud;
         [SerializeField] Image fadeOutImage;
 
-        [Header("Variables")]
-        [SerializeField] float fadeDuration;
-
         // Properties
         public MapDrawer MapDrawer => mapDrawer;
 
