@@ -19,7 +19,6 @@ namespace DarkestLike.InDungeon.Unit
         [Header("References")]
         [SerializeField] PositionMaintainer positionMaintainer;
         [SerializeField] CharacterAnimationController animationController;
-        [SerializeField] CharacterUnitHUD hud;
         
         [Header("Variables")]
         [SerializeField] bool isEnemyUnit = false;
@@ -30,7 +29,6 @@ namespace DarkestLike.InDungeon.Unit
         // Properties
         public CharacterData CharacterData => characterData;
         public CharacterAnimationController AnimController => animationController;
-        public CharacterUnitHUD HUD => hud;
         public string CharacterName => characterData?.CharacterName ?? "Unknown";
         public int CurrentHealth => characterData?.CurrentHealth ?? 0;
         public int MaxHealth => characterData?.MaxHealth ?? 0;

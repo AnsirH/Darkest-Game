@@ -129,8 +129,6 @@ namespace DarkestLike.InDungeon.BattleSystem
             selectedEnemyUnit = enemyUnit;
             if (selectedEnemyUnit != null)
             {
-                // 선택 UI 활성화
-                selectedEnemyUnit.HUD.ActiveSelectImage(true);
             }
         }
 
@@ -142,7 +140,6 @@ namespace DarkestLike.InDungeon.BattleSystem
             if (selectedEnemyUnit != null)
             {
                 // 선택 UI 비활성화
-                selectedEnemyUnit.HUD.ActiveSelectImage(false);
                 selectedEnemyUnit = null;
             }
         }

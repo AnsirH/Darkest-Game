@@ -2,7 +2,9 @@ using DarkestLike.Map;
 using DarkestLike.Singleton;
 using System.Collections;
 using System.Collections.Generic;
+using _02_Scripts.InDungeon.UI;
 using DarkestLike.InDungeon.Manager;
+using DarkestLike.InDungeon.Unit;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -14,6 +16,7 @@ namespace DarkestLike.InDungeon.UI
         [SerializeField] MapDrawer mapDrawer;
         [SerializeField] BattleHud battleHud;
         [SerializeField] Image fadeOutImage;
+        [SerializeField] HpBarController hpBarController;
 
         // Properties
         public MapDrawer MapDrawer => mapDrawer;
@@ -89,6 +92,11 @@ namespace DarkestLike.InDungeon.UI
         public void ResetFadeOutImage()
         {
             fadeOutImage.color = new(0, 0, 0, 0);
+        }
+
+        public void CreateHpBar(CharacterUnit unit)
+        {
+            hpBarController.CreateHpBar(unit);
         }
     }
 }
