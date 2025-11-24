@@ -15,11 +15,11 @@ namespace DarkestLike.Character
         // CharacterBase 참조 추가
         public CharacterBase Base { get; private set; }
 
-        public int MaxHealth => Stats.MaxHealth + (level) * (int)(Stats.MaxHealth * 1.5f);
-        public int Attack => Stats.TotalAttack + (level) * (int)(Stats.Attack * 1.5f);
-        public int Defense => Stats.TotalDefense + (level) * (int)(Stats.Defense * 1.5f);
-        public int Speed => Stats.TotalSpeed + (level) * (int)(Stats.Speed * 1.5f);
-        public int Evasion => Stats.TotalEvasion + (level) * (int)(Stats.Evasion * 1.5f);
+        public int MaxHealth => Stats.MaxHealth;
+        public int Attack => Stats.TotalAttack;
+        public int Defense => Stats.TotalDefense;
+        public int Speed => Stats.TotalSpeed;
+        public int Evasion => Stats.TotalEvasion;
 
         // 현재 HP 관리
         public int CurrentHealth 
@@ -55,16 +55,6 @@ namespace DarkestLike.Character
                 characterBase.Speed,
                 characterBase.Evasion
             );
-        }
-
-        /// <summary>
-        /// 기존 방식 호환성을 위한 생성자 (Deprecated)
-        /// </summary>
-        [System.Obsolete("Use CharacterData(CharacterBase, string, int) instead")]
-        public CharacterData(string name, int maxHealth, int attack, int defense, int speed, int evasion)
-        {
-            level = 0;
-            Stats = new CharacterStats(name, maxHealth, attack, defense, speed, evasion);
         }
 
     public void ApplyModifier(StatModifier modifier)
