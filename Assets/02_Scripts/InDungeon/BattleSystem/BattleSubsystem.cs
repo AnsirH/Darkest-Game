@@ -26,7 +26,8 @@ namespace DarkestLike.InDungeon.BattleSystem
         // Properties
         public bool IsBattleActive => isBattleActive;
         public Transform BattleCamTrf => battleStage.BattleCamTrf;
-        public Unit.CharacterUnit SelectedEnemyUnit => selectedEnemyUnit;
+        public CharacterUnit SelectedEnemyUnit => selectedEnemyUnit;
+        public List<CharacterUnit> EnemyUnits => battleStage.EnemyUnits;
 
         private void Update()
         {
@@ -56,7 +57,7 @@ namespace DarkestLike.InDungeon.BattleSystem
         /// 배틀을 시작합니다.
         /// </summary>
         /// <param name="enemyData">적 데이터 리스트</param>
-        public void StartBattle(List<Unit.CharacterUnit> playerUnits, List<CharacterData> enemyData, Vector3 stagePosition)
+        public void StartBattle(List<CharacterUnit> playerUnits, List<CharacterData> enemyData, Vector3 stagePosition)
         {
             if (isBattleActive) 
             {

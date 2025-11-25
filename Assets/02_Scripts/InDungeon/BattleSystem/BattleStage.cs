@@ -18,6 +18,7 @@ namespace DarkestLike.InDungeon.BattleSystem
         List<CharacterUnit> enemyUnits = new();
         // Properties
         public Transform BattleCamTrf => battleCamTrf;
+        public List<CharacterUnit> EnemyUnits => enemyUnits;
         
         // 플레이어 유닛 리스트와 적 데이터를 받아서 받아서 배틀 스테이지 초기화
         public void InitializeBattleStage(List<Unit.CharacterUnit> playerUnits, List<CharacterData> enemyData, Vector3 stagePosition)
@@ -44,7 +45,7 @@ namespace DarkestLike.InDungeon.BattleSystem
             for (int i = 0; i < enemyData.Count; i++)
             {
                 CharacterUnit unit = Instantiate(characterUnitPrefab);
-                unit.Initialize(enemyData[i], enemyPositions[i]);
+                unit.Initialize(enemyData[i], enemyPositions[i], true);
                 enemyUnits.Add(unit);
             }
         }

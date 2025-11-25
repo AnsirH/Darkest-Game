@@ -30,6 +30,10 @@ namespace DarkestLike.InDungeon.Manager
                 battleSubsystem.StartBattle(partyCtrl.CharacterUnits, enemyData, Vector3.zero);
             else if (mapSubsystem.CurrentLocation == CurrentLocation.Hallway)
                 battleSubsystem.StartBattle(partyCtrl.CharacterUnits, enemyData, mapSubsystem.CurrentTile.Position);
+            for (int i = 0; i < battleSubsystem.EnemyUnits.Count; ++i)
+            {
+                uiSubsystem.CreateHpBar(battleSubsystem.EnemyUnits[i]);
+            }
         }
 
         public void SelectEnemyUnit(Unit.CharacterUnit enemyUnit)

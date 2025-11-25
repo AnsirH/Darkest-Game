@@ -1,3 +1,4 @@
+using System;
 using DarkestLike.ScriptableObj;
 using DarkestLike.Character;
 using DarkestLike.InDungeon.BattleSystem;
@@ -34,12 +35,20 @@ namespace DarkestLike.InDungeon.Unit
         public int MaxHealth => characterData?.MaxHealth ?? 0;
         public bool IsAlive => characterData?.IsAlive ?? false;
         public bool IsEnemyUnit => isEnemyUnit;
-        
+
+        private void Update()
+        {
+            if (!isEnemyUnit && animationController is not null)
+            {
+                animationController.UpdateMoveSpeedParameter();
+            }
+        }
+
         /// <summary>
         /// CharacterData를 기반으로 CharacterUnit을 초기화합니다.
         /// </summary>
         /// <param name="characterData">캐릭터의 데이터</param>
-        public void Initialize(CharacterData characterData, Transform positionTarget)
+        public void Initialize(CharacterData characterData, Transform positionTarget, bool isEnemy)
         {
             if (characterData == null)
             {
@@ -57,7 +66,8 @@ namespace DarkestLike.InDungeon.Unit
             {
                 Debug.LogWarning($"CharacterBase {characterData.Base.name}의 ModelPrefab이 설정되지 않았습니다.");
             }
-            
+
+            isEnemyUnit = isEnemy;
             transform.rotation = positionTarget.rotation;
             positionMaintainer.SetTarget(positionTarget);
             positionMaintainer.SetPositionToTarget();

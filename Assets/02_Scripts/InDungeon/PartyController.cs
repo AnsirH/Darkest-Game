@@ -42,7 +42,7 @@ namespace DarkestLike.InDungeon
             {
                 CharacterUnit newUnit = Instantiate(characterUnitPrefab);
                 newUnit.transform.position = positionTargets[i].position;
-                newUnit.Initialize(characterDatas[i], positionTargets[i]);
+                newUnit.Initialize(characterDatas[i], positionTargets[i], false);
                 characterUnits.Add(newUnit);
             }
         }

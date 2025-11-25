@@ -14,7 +14,7 @@ namespace DarkestLike.InDungeon
 
         public float maxMoveSpeed = 1.0f;
 
-        private void Update()
+        public void UpdateMoveSpeedParameter()
         {
             if (anim == null) return;
             float moveSpeed = positionMaintainer.MoveSpeedX;
