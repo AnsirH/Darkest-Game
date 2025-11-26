@@ -8,7 +8,7 @@ namespace DarkestLike.InDungeon.Manager
 {
     public enum DungeonEventType
     {
-        Loading, ExitRoom, ExitHallway, EnterRoom, EnterHallway, EnterTile, StartBattle
+        Loading, ExitRoom, ExitHallway, EnterRoom, EnterHallway, EnterTile, StartBattle, SelectUnit
     }
     
     public class DungeonEventBus

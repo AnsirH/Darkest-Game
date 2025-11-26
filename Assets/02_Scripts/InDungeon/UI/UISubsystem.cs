@@ -17,9 +17,11 @@ namespace DarkestLike.InDungeon.UI
         [SerializeField] BattleHud battleHud;
         [SerializeField] Image fadeOutImage;
         [SerializeField] HpBarController hpBarController;
+        [SerializeField] SelectedUnitBarController selectedUnitBarController;
 
         // Properties
         public MapDrawer MapDrawer => mapDrawer;
+        public SelectedUnitBarController SelectedUnitBarController => selectedUnitBarController;
 
         public void ActiveMapDrawer(bool active) { mapDrawer.gameObject.SetActive(active); }
         public void ActiveBattleHud(bool active) { battleHud.gameObject.SetActive(active); }

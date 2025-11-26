@@ -3,6 +3,7 @@ using DarkestLike.InDungeon.Unit;
 using DarkestLike.Map;
 using System.Collections;
 using System.Collections.Generic;
+using DarkestLike.InDungeon.Manager;
 using UnityEngine;
 
 namespace DarkestLike.InDungeon.BattleSystem
@@ -19,9 +20,9 @@ namespace DarkestLike.InDungeon.BattleSystem
         // Variables
         // 배틀 상태
         private bool isBattleActive = false;
-        
         // 선택 상태 관리
-        private Unit.CharacterUnit selectedEnemyUnit = null;
+        private CharacterUnit selectedEnemyUnit = null;
+        private Camera mainCamera;
 
         // Properties
         public bool IsBattleActive => isBattleActive;
@@ -29,21 +30,21 @@ namespace DarkestLike.InDungeon.BattleSystem
         public CharacterUnit SelectedEnemyUnit => selectedEnemyUnit;
         public List<CharacterUnit> EnemyUnits => battleStage.EnemyUnits;
 
-        private void Update()
-        {
-            if (Input.GetMouseButtonDown(0))
-            {
-                RaycastHit hit;
-                if (Physics.Raycast(Camera.main.ScreenPointToRay(Input.mousePosition), out hit, Mathf.Infinity, LayerMask.GetMask("CharacterUnit")))
-                {
-                    SelectEnemy(hit.collider.GetComponent<Unit.CharacterUnit>());
-                }
-                else
-                {
-                    ClearSelectedEnemy();
-                }
-            }
-        }
+        // private void Update()
+        // {
+        //     if (Input.GetMouseButtonDown(0))
+        //     {
+        //         RaycastHit hit;
+        //         if (Physics.Raycast(mainCamera.ScreenPointToRay(Input.mousePosition), out hit, Mathf.Infinity, LayerMask.GetMask("CharacterUnit")))
+        //         {
+        //             SelectEnemy(hit.collider.GetComponent<Unit.CharacterUnit>());
+        //         }
+        //         else
+        //         {
+        //             ClearSelectedEnemy();
+        //         }
+        //     }
+        // }
 
         public void NextTurn()
         {
@@ -147,7 +148,7 @@ namespace DarkestLike.InDungeon.BattleSystem
 
         protected override void OnInitialize()
         {
-            Debug.Log("[BattleSubsystem] 초기화 완료");
+            mainCamera = Camera.main;
         }
     }
 }

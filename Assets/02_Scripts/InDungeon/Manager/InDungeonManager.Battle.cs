@@ -3,6 +3,7 @@ using DarkestLike.InDungeon.BattleSystem;
 using DarkestLike.Map;
 using System.Collections;
 using System.Collections.Generic;
+using DarkestLike.InDungeon.Unit;
 using UnityEngine;
 
 namespace DarkestLike.InDungeon.Manager
@@ -36,9 +37,30 @@ namespace DarkestLike.InDungeon.Manager
             }
         }
 
-        public void SelectEnemyUnit(Unit.CharacterUnit enemyUnit)
+
+        public void SelectPlayerUnit(CharacterUnit playerUnit)
+        {
+            if (playerUnit.IsEnemyUnit) return;
+            
+        }
+        public void SelectEnemyUnit(CharacterUnit enemyUnit)
         {
             battleSubsystem.SelectEnemy(enemyUnit);
+        }
+
+        public void SelectUnit(CharacterUnit characterUnit)
+        {
+            if (characterUnit.IsEnemyUnit)
+            {
+                // 적 유닛 클릭했을 때 처리
+                // 기본 배틀 상태일 때는 적 정보 표시
+                // 플레이어 공격 활성화 상태일 때는 공격을 실행
+            }
+            else
+            {
+                uiSubsystem.SelectedUnitBarController.SetActivePlayerBar(true);
+                uiSubsystem.SelectedUnitBarController.SelectPlayerUnit(cameraSubsystem.MainCamera.WorldToScreenPoint(characterUnit.transform.position));
+            }
         }
     }
 }

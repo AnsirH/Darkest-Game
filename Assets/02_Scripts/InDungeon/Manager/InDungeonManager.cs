@@ -40,10 +40,6 @@ namespace DarkestLike.InDungeon.Manager
         public TileData CurrentTile => mapSubsystem.CurrentTile;
         public CurrentLocation CurrentLocation => mapSubsystem.CurrentLocation;
 
-        //void OnSceneLoadedHandler(string sceneName)
-        //{
-        //}
-
         // 던전 입장
         public void EnterDungeon(MapData mapData, List<CharacterData> characterDatas)
         {

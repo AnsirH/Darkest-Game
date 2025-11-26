@@ -5,6 +5,7 @@ using DarkestLike.InDungeon.BattleSystem;
 using DarkestLike.InDungeon;
 using System.Collections;
 using System.Collections.Generic;
+using DarkestLike.InDungeon.Manager;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.Pool;
@@ -131,6 +132,11 @@ namespace DarkestLike.InDungeon.Unit
         public void UpdateTurn()
         {
             characterData?.UpdateTurn();
+        }
+
+        public void OnClickHandler()
+        {
+            InDungeonManager.Inst.SelectUnit(this);
         }
     }
 }

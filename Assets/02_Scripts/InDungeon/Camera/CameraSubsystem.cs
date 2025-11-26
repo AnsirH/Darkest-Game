@@ -14,8 +14,10 @@ namespace DarkestLike.InDungeon.CameraControl
         [SerializeField] Transform roomCamTarget;
         [SerializeField] Transform partyCamTarget;
 
+        public Camera MainCamera { get; private set; }
         protected override void OnInitialize()
         {
+            MainCamera = Camera.main;
         }
 
         public void SetCameraTarget(Transform target) { camPositionMaintainer.SetTarget(target); }
