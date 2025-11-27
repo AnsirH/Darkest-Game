@@ -1,23 +1,38 @@
+using System;
+using DarkestLike.InDungeon.Manager;
 using UnityEngine;
 
 namespace _02_Scripts.InDungeon.UI
 {
     public class SelectedUnitBarController : MonoBehaviour
     {
-        [SerializeField] private RectTransform playerSelectedBar;
-        [SerializeField] private RectTransform enemySelectedBar;
-        
+        [SerializeField] private SelectedUnitBar playerSelectedBar;
+        [SerializeField] private SelectedUnitBar enemySelectedBar;
+        public Vector3 offset;
         public void SetActivePlayerBar(bool active) { playerSelectedBar.gameObject.SetActive(active); }
         public void SetActiveEnemyBar(bool active) { enemySelectedBar.gameObject.SetActive(active); }
 
-        public void SelectPlayerUnit(Vector3 rectPosition)
+        private void Start()
         {
-            playerSelectedBar.position = rectPosition;
+            playerSelectedBar?.SetOffset(offset);
+            playerSelectedBar?.SetViewCamera(InDungeonManager.Inst.ViewCamera);
+            enemySelectedBar?.SetOffset(offset);
+            enemySelectedBar?.SetViewCamera(InDungeonManager.Inst.ViewCamera);
         }
 
-        public void SelectEnemyUnit(Vector3 rectPosition)
+        private void Update()
         {
-            enemySelectedBar.position = rectPosition;
+            playerSelectedBar.UpdatePosition();
+        }
+
+        public void SelectPlayerUnit(Transform player)
+        {
+            playerSelectedBar.SetTarget(player);
+        }
+
+        public void SelectEnemyUnit(Transform enemy)
+        {
+            enemySelectedBar.SetTarget(enemy);
         }
     }
 }

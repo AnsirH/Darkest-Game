@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using DarkestLike.InDungeon.Manager;
 using DarkestLike.InDungeon.Unit;
 using UnityEngine;
 
@@ -13,18 +14,12 @@ namespace _02_Scripts.InDungeon.UI
         [SerializeField] private HpBar hpBarPrefab;
         private Dictionary<CharacterUnit, HpBar> hpBars = new();
         private List<CharacterUnit> removedCharacterUnits = new();
-        Camera mainCamera;
-        
-        private void Awake()
-        {
-            mainCamera = Camera.main;
-        }
         
         private void Update()
         {
             foreach (var hpBar in hpBars.Values)
             {
-                UpdateHpBarPosition(hpBar);
+                hpBar.UpdatePosition();
             }
             
             // 삭제된 유닛의 체력바 삭제
@@ -36,24 +31,16 @@ namespace _02_Scripts.InDungeon.UI
         {
             HpBar newHpBar = Instantiate(hpBarPrefab, transform);
             hpBars[targetUnit] = newHpBar;
-            newHpBar.SetFollowingTarget(targetUnit.transform);
-            UpdateHpBarPosition(newHpBar);
+            newHpBar.SetOffset(offset);
+            newHpBar.SetViewCamera(InDungeonManager.Inst.ViewCamera);
+            newHpBar.SetTarget(targetUnit.transform);
+            newHpBar.UpdatePosition();
             UpdateHpBarValue(targetUnit);
         }
 
         public void RemoveHpBar(CharacterUnit targetUnit)
         {
             removedCharacterUnits.Add(targetUnit);
-        }
-        
-        private void UpdateHpBarPosition(HpBar hpBar)
-        {
-            if (mainCamera is not null)
-                hpBar.rectTransform.position = mainCamera.WorldToScreenPoint(hpBar.FollowingTarget.position) + offset;
-            else
-            {
-                Debug.LogError("No Main Camera");
-            }
         }
 
         private void UpdateHpBarValue(CharacterUnit targetUnit)

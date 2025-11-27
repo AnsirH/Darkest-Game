@@ -59,7 +59,7 @@ namespace DarkestLike.InDungeon.Manager
             else
             {
                 uiSubsystem.SelectedUnitBarController.SetActivePlayerBar(true);
-                uiSubsystem.SelectedUnitBarController.SelectPlayerUnit(cameraSubsystem.MainCamera.WorldToScreenPoint(characterUnit.transform.position));
+                uiSubsystem.SelectedUnitBarController.SelectPlayerUnit(characterUnit.transform);
             }
         }
     }

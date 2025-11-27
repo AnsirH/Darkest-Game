@@ -3,21 +3,16 @@ using UnityEngine;
 
 namespace _02_Scripts.InDungeon.UI
 {
-    public class HpBar : MonoBehaviour, IFollowingBar
+    public class SelectedUnitBar : MonoBehaviour, IFollowingBar
     {
-        public RectTransform rectTransform;
-
-        [SerializeField] RectTransform hpBar;
-        
-        private Vector3 scale;
         private Vector3 offset;
-        private Transform target;
         private Camera viewCamera;
+        private Transform target;
+        private RectTransform rectTransform;
 
-        void Awake()
+        private void Awake()
         {
             rectTransform ??= GetComponent<RectTransform>();
-            scale = hpBar.localScale;
         }
 
         public void UpdatePosition()
@@ -27,12 +22,6 @@ namespace _02_Scripts.InDungeon.UI
             rectTransform.position = viewCamera.WorldToScreenPoint(target.position) + offset;
         }
         
-        public void SetHpBarPercent(float percent)
-        {
-            scale.x = percent;
-            hpBar.localScale = scale;
-        }
-
         public void SetOffset(Vector3 newOffset) { offset = newOffset; }
 
         public void SetTarget(Transform newTarget) { target = newTarget; }
