@@ -10,6 +10,7 @@ using UnityEngine;
 using DarkestLike.Character;
 using DarkestLike.InDungeon.Hallway;
 using DarkestLike.InDungeon.CameraControl;
+using DarkestLike.InDungeon.Unit;
 
 namespace DarkestLike.InDungeon.Manager
 {
@@ -47,9 +48,7 @@ namespace DarkestLike.InDungeon.Manager
             InitializeSubsystems();
             mapSubsystem.SetMapData(mapData);
             uiSubsystem.GenerateMapUI(mapSubsystem.MapData);
-            unitSubsystem.SetCharacterDatas(characterDatas);
-            for (int i = 0; i < partyCtrl.CharacterUnits.Count; ++i)
-                uiSubsystem.CreateHpBar(partyCtrl.CharacterUnits[i]);
+            CreatePlayerCharacter(characterDatas);
             EnterRoom(mapData.StartRoom);
         }
 
@@ -63,6 +62,18 @@ namespace DarkestLike.InDungeon.Manager
             unitSubsystem.Initialize();
         }
 
+        private void CreatePlayerCharacter(List<CharacterData> characterDatas)
+        {
+            for (int i = 0; i < characterDatas.Count; ++i)
+            {
+                if (unitSubsystem.AddPlayerCharacter(characterDatas[i], partyCtrl.PositionTargets[i],
+                        out CharacterUnit createdUnit))
+                {
+                    uiSubsystem.CreateHpBar(createdUnit);
+                }
+            }
+        }
+
         #region Enter Room
         public void EnterRoom(RoomData roomData)
         {
@@ -71,8 +82,9 @@ namespace DarkestLike.InDungeon.Manager
         
         public void EnterExitRoom()
         {
-            if (CurrentTile == null) return;
+            if (CurrentLocation == CurrentLocation.Room) return;
             
+            SetPlayerPositionToTarget();
             EnterRoom(mapSubsystem.CurrentHallway.ExitRoom);
             DungeonEventBus.Publish(DungeonEventType.ExitHallway);
         }
@@ -114,7 +126,7 @@ namespace DarkestLike.InDungeon.Manager
 
             DungeonEventBus.Publish(DungeonEventType.Loading);
             mapSubsystem.SetHallwayData(mapSubsystem.CurrentRoom.GetExitHallway(targetRoomData));
-            partyCtrl.ResetMembersPosition();
+            SetPlayerPositionToTarget();
             
             float hallwayLength = mapSubsystem.CurrentHallway.Tiles.Length * mapSubsystem.TileLength;
             cameraSubsystem.SetCameraMovementLimit(hallwayLength);
@@ -129,6 +141,12 @@ namespace DarkestLike.InDungeon.Manager
 
         #endregion
 
+        void SetPlayerPositionToTarget()
+        {
+            foreach (var playerUnit in unitSubsystem.PlayerUnits)
+                playerUnit.SetPositionToTarget();
+        }
+        
         public void FadeOut(float duration)
         {
             StartCoroutine(uiSubsystem.FadeOutCoroutine(true, duration));

@@ -133,10 +133,5 @@ namespace DarkestLike.InDungeon.Unit
         {
             characterData?.UpdateTurn();
         }
-
-        public void OnClickHandler()
-        {
-            InDungeonManager.Inst.SelectUnit(this);
-        }
     }
 }

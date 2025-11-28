@@ -1,28 +1,78 @@
+using System;
 using DarkestLike.Character;
 using DarkestLike.InDungeon.Unit;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using DarkestLike.InDungeon.Manager;
+using Unity.VisualScripting;
 using UnityEngine;
 
 namespace DarkestLike.InDungeon
 {
     public class UnitSubsystem : InDungeonSubsystem
     {
-        // Variables
-        List<CharacterData> characterDatas = new();
+        public CharacterUnit characterUnitPrefab;
         
+        // Variables
+        private Dictionary<CharacterData, CharacterUnit> playerCharacters = new();
+        private Dictionary<CharacterData, CharacterUnit> enemyCharacters = new();
+        private readonly string characterUnitLayerName = "CharacterUnit";
         // Properties
+        public List<CharacterUnit> PlayerUnits => playerCharacters.Values.ToList();
+        public List<CharacterUnit> EnemyUnits => enemyCharacters.Values.ToList();
+        public CharacterUnit SelectedPlayerUnit { get; private set; }
 
         protected override void OnInitialize()
         {
         }
 
-        public void SetCharacterDatas(List<CharacterData> characterDatas)
+        private void Update()
         {
-            this.characterDatas = characterDatas;
-            
-            InDungeonManager.Inst.PartyCtrl.InitCharacterUnits(characterDatas);
+            // 클릭 시 유닛을 선택하는 건지 확인
+            // 적 유닛 클릭이면 적 유닛 선택
+            // 플레이어 유닛 클릭이면 플레이어 유닛 선택
+            if (Input.GetMouseButtonDown(0))
+            {
+                RaycastHit hit;
+                if (!Physics.Raycast(InDungeonManager.Inst.ViewCamera.ScreenPointToRay(Input.mousePosition), out hit,
+                        500, LayerMask.GetMask(characterUnitLayerName)))
+                {
+                    InDungeonManager.Inst.SelectNone();
+                    return;
+                }
+                if (!hit.collider.TryGetComponent(out CharacterUnit clickedUnit)) return;
+                InDungeonManager.Inst.SelectUnit(clickedUnit);
+                if (!clickedUnit.IsEnemyUnit)
+                {
+                    SelectedPlayerUnit = clickedUnit;
+                }
+            }
+        }
+
+        public bool AddPlayerCharacter(CharacterData newCharacterData, Transform positionTarget, out CharacterUnit newCharacterUnit)
+        {
+            newCharacterUnit = null;
+            if (playerCharacters.ContainsKey(newCharacterData)) return false;
+            newCharacterUnit = CreateCharacterUnit(newCharacterData, positionTarget, false);
+            playerCharacters[newCharacterData] = newCharacterUnit;
+            return true;
+        }
+
+        public bool AddEnemyCharacter(CharacterData newCharacterData, Transform positionTarget, out CharacterUnit newCharacterUnit)
+        {
+            newCharacterUnit = null;
+            if (enemyCharacters.ContainsKey(newCharacterData)) return false;
+            newCharacterUnit = CreateCharacterUnit(newCharacterData, positionTarget, true);
+            enemyCharacters[newCharacterData] = newCharacterUnit;
+            return true;
+        }
+
+        private CharacterUnit CreateCharacterUnit(CharacterData newCharacterData, Transform positionTarget, bool isEnemy)
+        {
+            CharacterUnit newUnit = Instantiate(characterUnitPrefab, transform);
+            newUnit.Initialize(newCharacterData, positionTarget, isEnemy);
+            return newUnit;
         }
     }
 }

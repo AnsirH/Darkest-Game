@@ -24,28 +24,15 @@ namespace DarkestLike.InDungeon
         [SerializeField] Transform[] positionTargets;
         // Properties
         public Transform CamTrf => camTrf;
-        public List<CharacterUnit> CharacterUnits => characterUnits;
+        public Transform[]  PositionTargets => positionTargets;
 
         // Variables
-        List<CharacterUnit> characterUnits = new();
         Vector3 horizontalVector = Vector3.right;
         bool isSetMoveGround = false;
         bool isInEndPoint = false;
         bool isFreeze = false;
         int currentTileIndex = 0;
         float endDistance;
-        
-
-        public void InitCharacterUnits(List<CharacterData> characterDatas)
-        {
-            for (int i = 0; i < characterDatas.Count; ++i)
-            {
-                CharacterUnit newUnit = Instantiate(characterUnitPrefab);
-                newUnit.transform.position = positionTargets[i].position;
-                newUnit.Initialize(characterDatas[i], positionTargets[i], false);
-                characterUnits.Add(newUnit);
-            }
-        }
         
         private void Update()
         {
@@ -115,15 +102,8 @@ namespace DarkestLike.InDungeon
             ResetPosition();
             for (int i = 0; i < positionTargets.Length; ++i)
                 positionTargets[i].localPosition = newPositions[i];
-            ResetMembersPosition();
             isFreeze = false;
             InDungeonManager.Inst.EnterExitRoom();
-        }
-
-        public void ResetMembersPosition()
-        {
-            for (int i = 0; i < characterUnits.Count; ++i)
-                characterUnits[i].SetPositionToTarget();
         }
 
         private void OnTriggerEnter(Collider other)

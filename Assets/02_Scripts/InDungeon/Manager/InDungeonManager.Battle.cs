@@ -18,23 +18,26 @@ namespace DarkestLike.InDungeon.Manager
         {
             partyCtrl.ActiveFreeze(true);
             cameraSubsystem.SetCameraTarget(battleSubsystem.BattleCamTrf);
-            List<CharacterData> enemyData = enemyGroup?.Enemies;
+            List<CharacterData> enemyDatas = enemyGroup?.Enemies;
 
             // 적이 없으면 경고
-            if (enemyData == null || enemyData.Count == 0)
+            if (enemyDatas == null || enemyDatas.Count == 0)
             {
                 Debug.LogWarning("[InDungeonManager] 전투 타입인데 적이 없습니다. 적을 생성해야 합니다.");
                 // TODO: 나중에 적 생성 로직 추가
                 return;
             }
-            if (mapSubsystem.CurrentLocation == CurrentLocation.Room)
-                battleSubsystem.StartBattle(partyCtrl.CharacterUnits, enemyData, Vector3.zero);
-            else if (mapSubsystem.CurrentLocation == CurrentLocation.Hallway)
-                battleSubsystem.StartBattle(partyCtrl.CharacterUnits, enemyData, mapSubsystem.CurrentTile.Position);
-            for (int i = 0; i < battleSubsystem.EnemyUnits.Count; ++i)
+
+            for (int i = 0; i < enemyDatas.Count; i++)
             {
-                uiSubsystem.CreateHpBar(battleSubsystem.EnemyUnits[i]);
+                if (unitSubsystem.AddEnemyCharacter(enemyDatas[i], battleSubsystem.EnemyPositions[i], out CharacterUnit createdUnit))
+                    uiSubsystem.CreateHpBar(createdUnit);
             }
+            
+            if (mapSubsystem.CurrentLocation == CurrentLocation.Room)
+                battleSubsystem.StartBattle(unitSubsystem.PlayerUnits, unitSubsystem.EnemyUnits, Vector3.zero);
+            else if (mapSubsystem.CurrentLocation == CurrentLocation.Hallway)
+                battleSubsystem.StartBattle(unitSubsystem.PlayerUnits, unitSubsystem.EnemyUnits, mapSubsystem.CurrentTile.Position);
         }
 
 
@@ -61,6 +64,11 @@ namespace DarkestLike.InDungeon.Manager
                 uiSubsystem.SelectedUnitBarController.SetActivePlayerBar(true);
                 uiSubsystem.SelectedUnitBarController.SelectPlayerUnit(characterUnit.transform);
             }
+        }
+
+        public void SelectNone()
+        {
+            uiSubsystem.SelectedUnitBarController.SetActivePlayerBar(false);
         }
     }
 }

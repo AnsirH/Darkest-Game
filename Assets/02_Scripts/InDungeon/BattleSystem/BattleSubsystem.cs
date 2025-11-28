@@ -15,7 +15,10 @@ namespace DarkestLike.InDungeon.BattleSystem
     public class BattleSubsystem : InDungeonSubsystem
     {
         [Header("References")]
-        [SerializeField] BattleStage battleStage;
+        [SerializeField] Transform battleStage;
+        [SerializeField] Transform[] playerPositions;
+        [SerializeField] Transform[] enemyPositions;
+        [SerializeField] Transform battleCamTrf;
 
         // Variables
         // 배틀 상태
@@ -26,9 +29,9 @@ namespace DarkestLike.InDungeon.BattleSystem
 
         // Properties
         public bool IsBattleActive => isBattleActive;
-        public Transform BattleCamTrf => battleStage.BattleCamTrf;
+        public Transform BattleCamTrf => battleCamTrf;
         public CharacterUnit SelectedEnemyUnit => selectedEnemyUnit;
-        public List<CharacterUnit> EnemyUnits => battleStage.EnemyUnits;
+        public Transform[] EnemyPositions => enemyPositions;
 
         // private void Update()
         // {
@@ -54,11 +57,7 @@ namespace DarkestLike.InDungeon.BattleSystem
             //}
         }
 
-        /// <summary>
-        /// 배틀을 시작합니다.
-        /// </summary>
-        /// <param name="enemyData">적 데이터 리스트</param>
-        public void StartBattle(List<CharacterUnit> playerUnits, List<CharacterData> enemyData, Vector3 stagePosition)
+        public void StartBattle(List<CharacterUnit> playerUnits, List<CharacterUnit> enemyUnits, Vector3 stagePosition)
         {
             if (isBattleActive) 
             {
@@ -66,7 +65,7 @@ namespace DarkestLike.InDungeon.BattleSystem
                 return;
             }
 
-            if (enemyData == null || enemyData.Count == 0)
+            if (enemyUnits.Count == 0)
             {
                 Debug.LogWarning("[BattleSubsystem] 적 데이터가 없습니다.");
                 return;
@@ -78,16 +77,19 @@ namespace DarkestLike.InDungeon.BattleSystem
                 return;
             }
 
-            // BattleStage 초기화
-            if (battleStage is not null)
+            // 배틀 지점 설정
+            battleStage.position = stagePosition;
+            // 플레이어 유닛의 positionMaintainer의 target을 플레이어 위치로 설정
+            for (int i = 0; i < playerUnits.Count; i++)
             {
-                battleStage.InitializeBattleStage(playerUnits, enemyData, stagePosition);
-                isBattleActive = true;
-                Debug.Log($"[BattleSubsystem] 배틀 시작! 플레이어 {playerUnits.Count}명 vs 적 {enemyData.Count}명");
+                playerUnits[i].ChangePositionMaintainerTarget(playerPositions[i]);
+                playerUnits[i].AnimController.ActiveIsBattle(true);
             }
-            else
+
+            for (int i = 0; i < enemyUnits.Count; i++)
             {
-                Debug.LogError("[BattleSubsystem] BattleStage가 설정되지 않았습니다.");
+                enemyUnits[i].ChangePositionMaintainerTarget(enemyPositions[i]);
+                enemyUnits[i].SetPositionToTarget();
             }
         }
 
