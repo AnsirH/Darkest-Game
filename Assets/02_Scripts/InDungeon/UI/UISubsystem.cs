@@ -100,5 +100,10 @@ namespace DarkestLike.InDungeon.UI
         {
             hpBarController.CreateHpBar(unit);
         }
+
+        public void UpdateCharacterInfoArea(CharacterUnit characterUnit)
+        {
+            battleHud.SetCharacterInfo(characterUnit);
+        }
     }
 }

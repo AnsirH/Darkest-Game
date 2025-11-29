@@ -61,6 +61,7 @@ namespace DarkestLike.InDungeon.Manager
             }
             else
             {
+                uiSubsystem.UpdateCharacterInfoArea(characterUnit);
                 uiSubsystem.SelectedUnitBarController.SetActivePlayerBar(true);
                 uiSubsystem.SelectedUnitBarController.SelectPlayerUnit(characterUnit.transform);
             }

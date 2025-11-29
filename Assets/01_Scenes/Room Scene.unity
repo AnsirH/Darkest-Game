@@ -2154,6 +2154,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e41d3de4b156b5f47b874e73c7f9699c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  characterInfoText: {fileID: 1495586304}
 --- !u!1 &1075622331
 GameObject:
   m_ObjectHideFlags: 0
@@ -2747,7 +2748,7 @@ GameObject:
   - component: {fileID: 1163063366}
   - component: {fileID: 1163063365}
   m_Layer: 5
-  m_Name: Description Area (1)
+  m_Name: Character Info Area
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -3754,8 +3755,8 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 20
-  m_fontSizeBase: 20
+  m_fontSize: 30
+  m_fontSizeBase: 30
   m_fontWeight: 400
   m_enableAutoSizing: 0
   m_fontSizeMin: 18
