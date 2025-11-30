@@ -27,6 +27,7 @@ namespace _02_Scripts.InDungeon.UI
 
         public void SelectPlayerUnit(Transform player)
         {
+            SetActivePlayerBar(true);
             playerSelectedBar.SetTarget(player);
         }
 

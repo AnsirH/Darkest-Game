@@ -10,9 +10,10 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 1d2e1412d269de34a9aec8e12c33edaf, type: 3}
-  m_Name: SwordAttack
+  m_Name: GunAttack
   m_EditorClassIdentifier: 
-  description: "\uCE7C\uB85C \uBE60\uB974\uAC8C \uBCA0\uC5B4 \uACF5\uACA9\uD55C\uB2E4."
+  description: "\uCD1D\uC744 \uBE60\uB974\uAC8C \uB09C\uC0AC\uD558\uC5EC \uC804\uBC29
+    2\uC5F4\uC5D0 \uBC94\uC704 \uD53C\uD574\uB97C \uC900\uB2E4."
   AttackRatio: 80
   Accuracy: 90
   timelineAsset: {fileID: 11400000, guid: ef2d8c17226ba7c43be282a896170fc0, type: 2}
