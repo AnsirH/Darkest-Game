@@ -49,11 +49,11 @@ namespace DarkestLike.Character
             string name = string.IsNullOrEmpty(characterName) ? characterBase.name : characterName;
             Stats = new CharacterStats(
                 name,
-                characterBase.MaxHP,
-                characterBase.Attack,
-                characterBase.Defense,
-                characterBase.Speed,
-                characterBase.Evasion
+                characterBase.maxHp,
+                characterBase.attack,
+                characterBase.defense,
+                characterBase.speed,
+                characterBase.evasion
             );
         }
 

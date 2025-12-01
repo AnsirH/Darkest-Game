@@ -12,8 +12,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1d2e1412d269de34a9aec8e12c33edaf, type: 3}
   m_Name: StunAttack
   m_EditorClassIdentifier: 
-  description: "\uCE7C \uC190\uC7A1\uC774\uB85C \uB0B4\uB9AC\uCCD0 \uC0C1\uB300\uB97C
+  description: "\uCE7C \uC190\uC7A1\uC774\uB85C \uB0B4\uB9AC\uCC0D\uC5B4 \uC0C1\uB300\uB97C
     \uAE30\uC808\uC2DC\uD0A8\uB2E4."
-  AttackRatio: 80
-  Accuracy: 90
+  icon: {fileID: -1240828267, guid: dc533ee2a7851ac49ab34f24a2768d2a, type: 3}
+  attackRatio: 80
+  accuracy: 90
   timelineAsset: {fileID: 11400000, guid: ef2d8c17226ba7c43be282a896170fc0, type: 2}

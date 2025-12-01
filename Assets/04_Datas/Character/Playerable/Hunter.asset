@@ -12,9 +12,15 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8cf7fb71d83d3604083d30dd86ea8f3a, type: 3}
   m_Name: Hunter
   m_EditorClassIdentifier: 
-  MaxHP: 25
-  Attack: 7
-  Defense: 6
-  Speed: 6
-  Evasion: 5
-  ModelPrefab: {fileID: 6110079253322407548, guid: 796fb7c2175f1674590acdddab1e4100, type: 3}
+  maxHp: 25
+  attack: 8
+  defense: 7
+  speed: 5
+  evasion: 5
+  type: 0
+  modelPrefab: {fileID: 6110079253322407548, guid: 796fb7c2175f1674590acdddab1e4100, type: 3}
+  skills:
+  - {fileID: 11400000, guid: db8451e41f5bfd64684a4ad07ab327f7, type: 2}
+  - {fileID: 11400000, guid: fe29d9bad012e8943b458b9e2a40092b, type: 2}
+  - {fileID: 11400000, guid: cf8ac4a753941094f99ca941ddb52c13, type: 2}
+  - {fileID: 11400000, guid: d77a401fabefdc44999466eee8064e87, type: 2}

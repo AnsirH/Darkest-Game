@@ -8,8 +8,9 @@ public class SkillBase : ScriptableObject
 {
     [TextArea]
     public string description;
-    public int AttackRatio;
-    public int Accuracy;
+    public Sprite icon;
+    public int attackRatio;
+    public int accuracy;
 
     public TimelineAsset timelineAsset;
 }

@@ -49,7 +49,7 @@ namespace DarkestLike.InDungeon.Manager
             mapSubsystem.SetMapData(mapData);
             uiSubsystem.GenerateMapUI(mapSubsystem.MapData);
             CreatePlayerCharacter(characterDatas);
-            uiSubsystem.UpdateCharacterInfoArea(unitSubsystem.PlayerUnits[0]);
+            uiSubsystem.OnSelectPlayerUnit(unitSubsystem.PlayerUnits[0]);
             uiSubsystem.SelectedUnitBarController.SelectPlayerUnit(unitSubsystem.PlayerUnits[0].transform);
             EnterRoom(mapData.StartRoom);
         }

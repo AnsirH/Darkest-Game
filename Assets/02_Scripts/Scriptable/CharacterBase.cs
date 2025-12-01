@@ -15,17 +15,17 @@ namespace DarkestLike.ScriptableObj
     public class CharacterBase : ScriptableObject
     {
         [Header("Stats")]
-        public int MaxHP;
-        public int Attack;
-        public int Defense;
-        public int Speed;
-        public int Evasion;
-        public CharacterType Type;
+        public int maxHp;
+        public int attack;
+        public int defense;
+        public int speed;
+        public int evasion;
+        public CharacterType type;
 
         [Header("Model")]
-        public GameObject ModelPrefab;
+        public GameObject modelPrefab;
 
         //[Header("Skill")]
-        //public MoveData
+        public SkillBase[] skills;
     }
 }

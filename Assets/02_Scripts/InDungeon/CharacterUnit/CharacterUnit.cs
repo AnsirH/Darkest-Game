@@ -58,9 +58,9 @@ namespace DarkestLike.InDungeon.Unit
             }
             this.characterData = characterData;
             // 3D 모델 설정
-            if (characterData.Base.ModelPrefab != null)
+            if (characterData.Base.modelPrefab != null)
             {
-                GameObject model = Instantiate(characterData.Base.ModelPrefab, transform);
+                GameObject model = Instantiate(characterData.Base.modelPrefab, transform);
                 animationController.SetAnimator(model.GetComponent<Animator>());
             }
             else

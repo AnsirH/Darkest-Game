@@ -1,14 +1,11 @@
-using System;
-using System.Collections;
-using System.Collections.Generic;
 using System.Text;
 using DarkestLike.InDungeon.Unit;
 using TMPro;
 using UnityEngine;
 
-namespace DarkestLike.InDungeon.UI
+namespace _02_Scripts.InDungeon.UI
 {
-    public class BattleHud : MonoBehaviour
+    public partial class BattleHud : MonoBehaviour
     {
         [SerializeField] TextMeshProUGUI characterInfoText;
 

@@ -101,9 +101,15 @@ namespace DarkestLike.InDungeon.UI
             hpBarController.CreateHpBar(unit);
         }
 
-        public void UpdateCharacterInfoArea(CharacterUnit characterUnit)
+        public void OnSelectPlayerUnit(CharacterUnit characterUnit)
         {
             battleHud.SetCharacterInfo(characterUnit);
+            
+            SelectedUnitBarController.SetActivePlayerBar(true);
+            SelectedUnitBarController.SelectPlayerUnit(characterUnit.transform);
+            battleHud.UpdateSkillIcon(characterUnit.CharacterData.Base.skills);
+            battleHud.UpdateSkilInfo(characterUnit.CharacterData.Base.skills[0]);
         }
+        public void OnSelectPlayerSkill(SkillBase skill) { battleHud.UpdateSkilInfo(skill);}
     }
 }

@@ -13,6 +13,7 @@ MonoBehaviour:
   m_Name: ReinforceDefense
   m_EditorClassIdentifier: 
   description: "\uAE30\uD569\uC744 \uB123\uC5B4 \uBC29\uC5B4\uB825\uC744 \uAC15\uD654\uD55C\uB2E4."
-  AttackRatio: 80
-  Accuracy: 90
+  icon: {fileID: 1972384553, guid: dc533ee2a7851ac49ab34f24a2768d2a, type: 3}
+  attackRatio: 0
+  accuracy: 100
   timelineAsset: {fileID: 11400000, guid: ef2d8c17226ba7c43be282a896170fc0, type: 2}

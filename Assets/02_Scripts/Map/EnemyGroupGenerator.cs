@@ -154,7 +154,7 @@ namespace DarkestLike.Map
             List<CharacterBase> matchingEnemies = new();
             foreach (var enemy in mapData.enemeies)
             {
-                if (enemy != null && enemy.Type == characterType)
+                if (enemy != null && enemy.type == characterType)
                 {
                     matchingEnemies.Add(enemy);
                 }
