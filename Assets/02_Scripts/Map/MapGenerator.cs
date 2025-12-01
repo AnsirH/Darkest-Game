@@ -42,8 +42,7 @@ namespace DarkestLike.Map
             // 첫 번째 방 생성
             // currentStandardRoom: 현재 기준 방
             RoomType firstRoomType = RoomType.None;
-            EnemyGroup firstRoomEnemyGroup = GenerateEnemyGroupForRoom(mapData, dungeonLevel, firstRoomType);
-            RoomData currentStandardRoom = new RoomData(roomPosition, firstRoomType, enemyGroup: firstRoomEnemyGroup);
+            RoomData currentStandardRoom = new RoomData(roomPosition, firstRoomType, enemyGroup: null);
             newRooms.Add(currentStandardRoom);
 
             // 복도 연결 및 타일 생성 메서드
@@ -157,12 +156,13 @@ namespace DarkestLike.Map
         static TileData[] GenerateTilesBy(MapSOData mapData, int dungeonLevel)
         {
             TileData[] tiles = new TileData[mapData.TileCount];
-
+            TileType tileType = TileType.None;
+            EnemyGroup enemyGroup = null;
             for (int i = 0; i < tiles.Length; i++)
             {
-                TileType tileType = mapData.GetRandomTileType();
-                EnemyGroup enemyGroup = GenerateEnemyGroupForTile(mapData, dungeonLevel, tileType);
+                enemyGroup = GenerateEnemyGroupForTile(mapData, dungeonLevel, tileType);
                 tiles[i] = new(tileType, enemyGroup);
+                tileType = mapData.GetRandomTileType();
             }
 
             return tiles;
