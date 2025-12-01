@@ -6,16 +6,17 @@ namespace _02_Scripts.InDungeon.UI
 {
     public partial class BattleHud
     {
-        [Header("skill area")] 
-        [SerializeField] private Image[] skillIcons;
+        [Header("skill area")]
+        [SerializeField] private SkillButton[] skillButtons;
         [SerializeField] private TextMeshProUGUI descriptionText;
         [SerializeField] private TextMeshProUGUI skillStatsText;
 
         public void UpdateSkillIcon(SkillBase[] skills)
         {
-            for (int i = 0; i < skillIcons.Length; ++i)
+            for (int i = 0; i < skillButtons.Length; ++i)
             {
-                skillIcons[i].sprite = skills[i].icon;
+                if (i < skills.Length)
+                    skillButtons[i].SetSkill(skills[i]);
             }
         }
 
@@ -26,6 +27,15 @@ namespace _02_Scripts.InDungeon.UI
             sb.AppendLine($"공격: {skill.attackRatio}");
             sb.AppendLine($"명중: {skill.accuracy}");
             skillStatsText.text = sb.ToString();
+        }
+
+        public void HighlightSkillIcon(SkillBase skill)
+        {
+            // 모든 스킬 버튼을 순회하며 일치하는 스킬 찾기
+            foreach (var button in skillButtons)
+            {
+                button.HighlightSkillIcon(button.CurrentSkill == skill);
+            }
         }
     }
 }

@@ -5,7 +5,6 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using DarkestLike.InDungeon.Manager;
-using DarkestLike.InDungeon.UI;
 using Unity.VisualScripting;
 using UnityEngine;
 
@@ -18,37 +17,12 @@ namespace DarkestLike.InDungeon
         // Variables
         private Dictionary<CharacterData, CharacterUnit> playerCharacters = new();
         private Dictionary<CharacterData, CharacterUnit> enemyCharacters = new();
-        private readonly string characterUnitLayerName = "CharacterUnit";
         // Properties
         public List<CharacterUnit> PlayerUnits => playerCharacters.Values.ToList();
         public List<CharacterUnit> EnemyUnits => enemyCharacters.Values.ToList();
-        public CharacterUnit SelectedPlayerUnit { get; private set; }
 
         protected override void OnInitialize()
         {
-        }
-
-        private void Update()
-        {
-            // 클릭 시 유닛을 선택하는 건지 확인
-            // 적 유닛 클릭이면 적 유닛 선택
-            // 플레이어 유닛 클릭이면 플레이어 유닛 선택
-            if (Input.GetMouseButtonDown(0))
-            {
-                RaycastHit hit;
-                if (!Physics.Raycast(InDungeonManager.Inst.ViewCamera.ScreenPointToRay(Input.mousePosition), out hit,
-                        500, LayerMask.GetMask(characterUnitLayerName)))
-                {
-                    InDungeonManager.Inst.SelectNone();
-                    return;
-                }
-                if (!hit.collider.TryGetComponent(out CharacterUnit clickedUnit)) return;
-                InDungeonManager.Inst.SelectUnit(clickedUnit);
-                if (!clickedUnit.IsEnemyUnit)
-                {
-                    SelectedPlayerUnit = clickedUnit;
-                }
-            }
         }
 
         public bool AddPlayerCharacter(CharacterData newCharacterData, Transform positionTarget, out CharacterUnit newCharacterUnit)

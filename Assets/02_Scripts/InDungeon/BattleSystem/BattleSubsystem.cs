@@ -23,32 +23,39 @@ namespace DarkestLike.InDungeon.BattleSystem
         // Variables
         // 배틀 상태
         private bool isBattleActive = false;
+        private readonly string characterUnitLayerName = "CharacterUnit";
         // 선택 상태 관리
-        private CharacterUnit selectedEnemyUnit = null;
+        public CharacterUnit SelectedEnemyUnit { get; private set; } = null;
+        public CharacterUnit SelectedPlayerUnit { get; private set; } = null;
+        public SkillBase SelectedSkill { get; private set; } = null;
         private Camera mainCamera;
 
         // Properties
         public bool IsBattleActive => isBattleActive;
         public Transform BattleCamTrf => battleCamTrf;
-        public CharacterUnit SelectedEnemyUnit => selectedEnemyUnit;
         public Transform[] EnemyPositions => enemyPositions;
-
-        // private void Update()
-        // {
-        //     if (Input.GetMouseButtonDown(0))
-        //     {
-        //         RaycastHit hit;
-        //         if (Physics.Raycast(mainCamera.ScreenPointToRay(Input.mousePosition), out hit, Mathf.Infinity, LayerMask.GetMask("CharacterUnit")))
-        //         {
-        //             SelectEnemy(hit.collider.GetComponent<Unit.CharacterUnit>());
-        //         }
-        //         else
-        //         {
-        //             ClearSelectedEnemy();
-        //         }
-        //     }
-        // }
-
+        
+        private void Update()
+        {
+            // 클릭 시 유닛을 선택하는 건지 확인
+            // 적 유닛 클릭이면 적 유닛 선택
+            // 플레이어 유닛 클릭이면 플레이어 유닛 선택
+            if (Input.GetMouseButtonDown(0))
+            {
+                RaycastHit hit;
+                if (!Physics.Raycast(InDungeonManager.Inst.ViewCamera.ScreenPointToRay(Input.mousePosition), out hit,
+                        500, LayerMask.GetMask(characterUnitLayerName)))
+                    return;
+                if (!hit.collider.TryGetComponent(out CharacterUnit clickedUnit)) return;
+                
+                if (!clickedUnit.IsEnemyUnit)
+                {
+                    InDungeonManager.Inst.SelectPlayerUnit(clickedUnit);
+                    SelectedPlayerUnit = clickedUnit;
+                }
+            }
+        }
+        
         public void NextTurn()
         {
             //foreach (var character in UnitSubsystem.Inst.CharacterUnits)
@@ -93,6 +100,11 @@ namespace DarkestLike.InDungeon.BattleSystem
             }
         }
 
+        public void SetSelectedSkill(SkillBase skill)
+        {
+            SelectedSkill = skill;
+        }
+
         /// <summary>
         /// 배틀을 종료합니다.
         /// </summary>
@@ -113,11 +125,16 @@ namespace DarkestLike.InDungeon.BattleSystem
             // TODO: 나중에 적 유닛 비활성화 등 추가
         }
 
+        public void SetSelectedPlayerUnit(CharacterUnit unit)
+        {
+            SelectedPlayerUnit = unit;
+        }
+
         /// <summary>
         /// 적 유닛을 선택합니다.
         /// </summary>
         /// <param name="enemyUnit">선택할 적 유닛</param>
-        public void SelectEnemy(Unit.CharacterUnit enemyUnit)
+        public void SelectEnemy(CharacterUnit enemyUnit)
         {
             if (!isBattleActive)
             {
@@ -130,10 +147,7 @@ namespace DarkestLike.InDungeon.BattleSystem
             ClearSelectedEnemy();
 
             // 새 유닛 선택
-            selectedEnemyUnit = enemyUnit;
-            if (selectedEnemyUnit != null)
-            {
-            }
+            SelectedEnemyUnit = enemyUnit;
         }
 
         /// <summary>
@@ -141,10 +155,10 @@ namespace DarkestLike.InDungeon.BattleSystem
         /// </summary>
         public void ClearSelectedEnemy()
         {
-            if (selectedEnemyUnit != null)
+            if (SelectedEnemyUnit != null)
             {
                 // 선택 UI 비활성화
-                selectedEnemyUnit = null;
+                SelectedEnemyUnit = null;
             }
         }
 

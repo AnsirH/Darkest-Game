@@ -1,4 +1,3 @@
-using DarkestLike.InDungeon.UI;
 using DarkestLike.InDungeon.BattleSystem;
 using DarkestLike.Map;
 using DarkestLike.SceneLoad;
@@ -11,6 +10,7 @@ using DarkestLike.Character;
 using DarkestLike.InDungeon.Hallway;
 using DarkestLike.InDungeon.CameraControl;
 using DarkestLike.InDungeon.Unit;
+using UISubsystem = _02_Scripts.InDungeon.UI.UISubsystem;
 
 namespace DarkestLike.InDungeon.Manager
 {

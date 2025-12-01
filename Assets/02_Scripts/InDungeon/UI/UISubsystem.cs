@@ -1,27 +1,21 @@
-using DarkestLike.Map;
-using DarkestLike.Singleton;
 using System.Collections;
-using System.Collections.Generic;
-using _02_Scripts.InDungeon.UI;
+using DarkestLike.InDungeon;
 using DarkestLike.InDungeon.Manager;
 using DarkestLike.InDungeon.Unit;
+using DarkestLike.Map;
 using UnityEngine;
 using UnityEngine.UI;
 
-namespace DarkestLike.InDungeon.UI
+namespace _02_Scripts.InDungeon.UI
 {
-    public class UISubsystem : InDungeonSubsystem
+    public partial class UISubsystem : InDungeonSubsystem
     {
         [Header("references")]
         [SerializeField] MapDrawer mapDrawer;
-        [SerializeField] BattleHud battleHud;
         [SerializeField] Image fadeOutImage;
-        [SerializeField] HpBarController hpBarController;
-        [SerializeField] SelectedUnitBarController selectedUnitBarController;
 
         // Properties
         public MapDrawer MapDrawer => mapDrawer;
-        public SelectedUnitBarController SelectedUnitBarController => selectedUnitBarController;
 
         public void ActiveMapDrawer(bool active) { mapDrawer.gameObject.SetActive(active); }
         public void ActiveBattleHud(bool active) { battleHud.gameObject.SetActive(active); }
@@ -95,21 +89,5 @@ namespace DarkestLike.InDungeon.UI
         {
             fadeOutImage.color = new(0, 0, 0, 0);
         }
-
-        public void CreateHpBar(CharacterUnit unit)
-        {
-            hpBarController.CreateHpBar(unit);
-        }
-
-        public void OnSelectPlayerUnit(CharacterUnit characterUnit)
-        {
-            battleHud.SetCharacterInfo(characterUnit);
-            
-            SelectedUnitBarController.SetActivePlayerBar(true);
-            SelectedUnitBarController.SelectPlayerUnit(characterUnit.transform);
-            battleHud.UpdateSkillIcon(characterUnit.CharacterData.Base.skills);
-            battleHud.UpdateSkilInfo(characterUnit.CharacterData.Base.skills[0]);
-        }
-        public void OnSelectPlayerSkill(SkillBase skill) { battleHud.UpdateSkilInfo(skill);}
     }
 }

@@ -43,7 +43,7 @@ namespace DarkestLike.InDungeon.Manager
 
         public void SelectPlayerUnit(CharacterUnit playerUnit)
         {
-            if (playerUnit.IsEnemyUnit) return;
+            uiSubsystem.OnSelectPlayerUnit(playerUnit);
             
         }
         public void SelectEnemyUnit(CharacterUnit enemyUnit)
@@ -51,23 +51,15 @@ namespace DarkestLike.InDungeon.Manager
             battleSubsystem.SelectEnemy(enemyUnit);
         }
 
-        public void SelectUnit(CharacterUnit characterUnit)
-        {
-            if (characterUnit.IsEnemyUnit)
-            {
-                // 적 유닛 클릭했을 때 처리
-                // 기본 배틀 상태일 때는 적 정보 표시
-                // 플레이어 공격 활성화 상태일 때는 공격을 실행
-            }
-            else
-            {
-                uiSubsystem.OnSelectPlayerUnit(characterUnit);
-            }
-        }
-
         public void SelectNone()
         {
             uiSubsystem.SelectedUnitBarController.SetActivePlayerBar(false);
+        }
+
+        public void SelectSkill(SkillBase skill)
+        {
+            battleSubsystem.SetSelectedSkill(skill);
+            uiSubsystem.OnSelectPlayerSkill(battleSubsystem.SelectedSkill);
         }
     }
 }
