@@ -14,6 +14,13 @@ namespace DarkestLike.InDungeon.BattleSystem
     // 배틀 종료
     public class BattleSubsystem : InDungeonSubsystem
     {
+        enum BattleState
+        {
+            SelectUnit,
+            PlayerTurn,
+            Action,
+            Result
+        }
         [Header("References")]
         [SerializeField] Transform battleStage;
         [SerializeField] Transform[] playerPositions;
@@ -22,8 +29,10 @@ namespace DarkestLike.InDungeon.BattleSystem
 
         // Variables
         // 배틀 상태
-        private bool isBattleActive = false;
         private readonly string characterUnitLayerName = "CharacterUnit";
+        private bool isBattleActive = false;
+        private BattleState battleState = BattleState.SelectUnit;
+        private Queue<CharacterUnit> queuedUnits = new Queue<CharacterUnit>();
         // 선택 상태 관리
         public CharacterUnit SelectedEnemyUnit { get; private set; } = null;
         public CharacterUnit SelectedPlayerUnit { get; private set; } = null;
@@ -40,18 +49,21 @@ namespace DarkestLike.InDungeon.BattleSystem
             // 클릭 시 유닛을 선택하는 건지 확인
             // 적 유닛 클릭이면 적 유닛 선택
             // 플레이어 유닛 클릭이면 플레이어 유닛 선택
-            if (Input.GetMouseButtonDown(0))
+            if (battleState == BattleState.PlayerTurn)
             {
-                RaycastHit hit;
-                if (!Physics.Raycast(InDungeonManager.Inst.ViewCamera.ScreenPointToRay(Input.mousePosition), out hit,
-                        500, LayerMask.GetMask(characterUnitLayerName)))
-                    return;
-                if (!hit.collider.TryGetComponent(out CharacterUnit clickedUnit)) return;
-                
-                if (!clickedUnit.IsEnemyUnit)
+                if (Input.GetMouseButtonDown(0))
                 {
-                    InDungeonManager.Inst.SelectPlayerUnit(clickedUnit);
-                    SelectedPlayerUnit = clickedUnit;
+                    RaycastHit hit;
+                    if (!Physics.Raycast(InDungeonManager.Inst.ViewCamera.ScreenPointToRay(Input.mousePosition), out hit,
+                            500, LayerMask.GetMask(characterUnitLayerName)))
+                        return;
+                    if (!hit.collider.TryGetComponent(out CharacterUnit clickedUnit)) return;
+                
+                    if (!clickedUnit.IsEnemyUnit)
+                    {
+                        InDungeonManager.Inst.SelectPlayerUnit(clickedUnit);
+                        SelectedPlayerUnit = clickedUnit;
+                    }
                 }
             }
         }

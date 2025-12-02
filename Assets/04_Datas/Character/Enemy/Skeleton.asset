@@ -12,10 +12,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8cf7fb71d83d3604083d30dd86ea8f3a, type: 3}
   m_Name: Skeleton
   m_EditorClassIdentifier: 
-  MaxHP: 10
-  Attack: 6
-  Defense: 4
-  Speed: 6
-  Evasion: 5
-  Type: 0
-  ModelPrefab: {fileID: 3924588639398160718, guid: dcd995471fd6e844b9d064111f80b9ae, type: 3}
+  maxHp: 0
+  attack: 0
+  defense: 0
+  speed: 0
+  evasion: 0
+  type: 0
+  modelPrefab: {fileID: 3924588639398160718, guid: dcd995471fd6e844b9d064111f80b9ae, type: 3}
+  skills: []
