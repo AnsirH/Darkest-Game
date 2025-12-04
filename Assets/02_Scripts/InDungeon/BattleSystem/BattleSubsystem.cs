@@ -16,10 +16,12 @@ namespace DarkestLike.InDungeon.BattleSystem
     {
         enum BattleState
         {
+            Start,
             SelectUnit,
             PlayerTurn,
             Action,
-            Result
+            Result,
+            End
         }
         [Header("References")]
         [SerializeField] Transform battleStage;
@@ -67,14 +69,6 @@ namespace DarkestLike.InDungeon.BattleSystem
                 }
             }
         }
-        
-        public void NextTurn()
-        {
-            //foreach (var character in UnitSubsystem.Inst.CharacterUnits)
-            //{
-            //    character.UpdateTurn();
-            //}
-        }
 
         public void StartBattle(List<CharacterUnit> playerUnits, List<CharacterUnit> enemyUnits, Vector3 stagePosition)
         {
@@ -112,6 +106,21 @@ namespace DarkestLike.InDungeon.BattleSystem
             }
         }
 
+        private IEnumerator BattleLoop()
+        {
+            // 배틀 시작 연출
+            yield return new WaitForSeconds(1.0f);
+            List<CharacterUnit> units = new List<CharacterUnit>();
+            while (true)
+            {
+                // 캐릭터 선택
+                battleState = BattleState.SelectUnit;
+                yield return new WaitForSeconds(1.0f);
+                
+                
+            }
+        }
+
         public void SetSelectedSkill(SkillBase skill)
         {
             SelectedSkill = skill;
@@ -136,6 +145,8 @@ namespace DarkestLike.InDungeon.BattleSystem
             
             // TODO: 나중에 적 유닛 비활성화 등 추가
         }
+        
+        
 
         public void SetSelectedPlayerUnit(CharacterUnit unit)
         {
