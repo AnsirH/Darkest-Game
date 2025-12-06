@@ -13,6 +13,15 @@ using UnityEngine.Pool;
 namespace DarkestLike.InDungeon.Unit
 {
     /// <summary>
+    /// 유닛의 포지션 (전열/후열)
+    /// </summary>
+    public enum UnitPosition
+    {
+        Front = 0,  // 전열 (0-1번 위치)
+        Back = 1    // 후열 (2-3번 위치)
+    }
+
+    /// <summary>
     /// 캐릭터의 3D 표현과 데이터를 관리하는 클래스
     /// CharacterBase를 기반으로 CharacterData를 생성하고 관리합니다.
     /// </summary>
@@ -21,10 +30,11 @@ namespace DarkestLike.InDungeon.Unit
         [Header("References")]
         [SerializeField] PositionMaintainer positionMaintainer;
         [SerializeField] CharacterAnimationController animationController;
-        
+
         [Header("Variables")]
         [SerializeField] bool isEnemyUnit = false;
-        
+        [SerializeField] int positionIndex = 0; // 0~3
+
         // Variables
         CharacterData characterData;
         
@@ -35,7 +45,11 @@ namespace DarkestLike.InDungeon.Unit
         public int CurrentHealth => characterData?.CurrentHealth ?? 0;
         public int MaxHealth => characterData?.MaxHealth ?? 0;
         public bool IsAlive => characterData?.IsAlive ?? false;
+        public bool IsDead => characterData?.IsDead ?? true;
         public bool IsEnemyUnit => isEnemyUnit;
+        public bool IsPlayerUnit => !isEnemyUnit;
+        public int PositionIndex => positionIndex;
+        public UnitPosition Position => positionIndex <= 1 ? UnitPosition.Front : UnitPosition.Back;
 
         private void Update()
         {
@@ -132,6 +146,30 @@ namespace DarkestLike.InDungeon.Unit
         public void UpdateTurn()
         {
             characterData?.UpdateTurn();
+        }
+
+        /// <summary>
+        /// 데미지를 받습니다.
+        /// </summary>
+        public void TakeDamage(int damage)
+        {
+            characterData?.TakeDamage(damage);
+        }
+
+        /// <summary>
+        /// 포지션 인덱스를 설정합니다.
+        /// </summary>
+        public void SetPositionIndex(int index)
+        {
+            positionIndex = Mathf.Clamp(index, 0, 3);
+        }
+
+        /// <summary>
+        /// PositionMaintainer의 타겟을 변경합니다.
+        /// </summary>
+        public void SetTarget(Transform target)
+        {
+            positionMaintainer.SetTarget(target);
         }
     }
 }

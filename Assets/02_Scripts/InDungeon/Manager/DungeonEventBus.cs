@@ -8,7 +8,36 @@ namespace DarkestLike.InDungeon.Manager
 {
     public enum DungeonEventType
     {
-        Loading, ExitRoom, ExitHallway, EnterRoom, EnterHallway, EnterTile, StartBattle, SelectUnit
+        // 던전 탐험
+        Loading,
+        ExitRoom,
+        ExitHallway,
+        EnterRoom,
+        EnterHallway,
+        EnterTile,
+
+        // 전투 시작/종료
+        StartBattle,
+        BattleVictory,
+        BattleDefeat,
+        FleeSuccess,
+        FleeFailed,
+
+        // 턴 관리
+        SelectUnit,
+        PlayerTurnStart,
+        EnemyTurnStart,
+        TurnSkipped,
+
+        // 전투 액션
+        AttackMiss,
+        HealthChanged,
+        DamageDealt,
+        StatusEffectApplied,
+
+        // 라운드
+        RoundStart,
+        RoundEnd
     }
     
     public class DungeonEventBus
