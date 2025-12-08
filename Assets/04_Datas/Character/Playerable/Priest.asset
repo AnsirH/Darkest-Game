@@ -19,4 +19,8 @@ MonoBehaviour:
   evasion: 5
   type: 1
   modelPrefab: {fileID: 7454132596983000063, guid: 6ce96f8f974f6fa4ea76fe647fd84aae, type: 3}
-  skills: []
+  skills:
+  - {fileID: 11400000, guid: 9603661c6e0d9e748b1b068be9064efc, type: 2}
+  - {fileID: 11400000, guid: 126dee64e3b8b574e91268e398502f5a, type: 2}
+  - {fileID: 11400000, guid: bd1012944a04bf549ab9d4ac1123d919, type: 2}
+  - {fileID: 11400000, guid: 8a385ddc42a40cd4abc6fb99816831ef, type: 2}

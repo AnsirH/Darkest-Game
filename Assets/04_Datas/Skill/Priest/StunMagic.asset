@@ -1,0 +1,30 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1d2e1412d269de34a9aec8e12c33edaf, type: 3}
+  m_Name: StunMagic
+  m_EditorClassIdentifier: 
+  description: "\uBCBC\uB77D\uC744 \uB0B4\uB9AC\uCCD0 \uAE30\uC808\uC2DC\uD0A8\uB2E4."
+  icon: {fileID: 659077241, guid: 5a4c29bda8b37784e817e6810b146344, type: 3}
+  attackRatio: 80
+  accuracy: 100
+  timelineAsset: {fileID: 0}
+  canUseFromFront: 0
+  canUseFromBack: 1
+  targetType: 0
+  targetCount: 1
+  canTargetFront: 1
+  canTargetBack: 1
+  appliesStatusEffect: 1
+  statusEffectType: 2
+  statusEffectDuration: 1
+  statusEffectValue: 1
+  statusEffectChance: 100
