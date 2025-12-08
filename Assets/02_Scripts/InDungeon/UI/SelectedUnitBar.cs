@@ -18,7 +18,8 @@ namespace _02_Scripts.InDungeon.UI
         public void UpdatePosition()
         {
             if (target is null || viewCamera is null) return;
-            
+            if (!target.gameObject.activeInHierarchy) return;
+
             rectTransform.position = viewCamera.WorldToScreenPoint(target.position) + offset;
         }
         

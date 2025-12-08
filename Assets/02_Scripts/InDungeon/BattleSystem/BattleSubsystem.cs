@@ -54,6 +54,7 @@ namespace DarkestLike.InDungeon.BattleSystem
         public CharacterUnit SelectedEnemyUnit { get; private set; } = null;
         public CharacterUnit SelectedPlayerUnit { get; private set; } = null;
         public SkillBase SelectedSkill { get; private set; } = null;
+        private CharacterUnit currentHoveredUnit = null;
         private Camera mainCamera;
 
         // Properties
@@ -63,25 +64,72 @@ namespace DarkestLike.InDungeon.BattleSystem
         
         private void Update()
         {
-            // 클릭 시 유닛을 선택하는 건지 확인
-            // 적 유닛 클릭이면 적 유닛 선택
-            // 플레이어 유닛 클릭이면 플레이어 유닛 선택
-            if (battleState == BattleState.PlayerTurn)
+            // 배틀 전: 유닛 클릭 선택
+            if (!isBattleActive)
             {
                 if (Input.GetMouseButtonDown(0))
                 {
-                    RaycastHit hit;
-                    if (!Physics.Raycast(InDungeonManager.Inst.ViewCamera.ScreenPointToRay(Input.mousePosition), out hit,
-                            500, LayerMask.GetMask(characterUnitLayerName)))
-                        return;
-                    if (!hit.collider.TryGetComponent(out CharacterUnit clickedUnit)) return;
-                
-                    if (!clickedUnit.IsEnemyUnit)
-                    {
-                        InDungeonManager.Inst.SelectPlayerUnit(clickedUnit);
-                        SelectedPlayerUnit = clickedUnit;
-                    }
+                    HandleUnitClick();
                 }
+            }
+            // 배틀 중: 적 유닛 호버 감지
+            else
+            {
+                HandleUnitHover();
+            }
+        }
+
+        /// <summary>
+        /// 마우스 호버 시 적 유닛 감지 및 호버 바 표시 (적 유닛 전용)
+        /// </summary>
+        private void HandleUnitHover()
+        {
+            RaycastHit hit;
+            CharacterUnit hoveredUnit = null;
+
+            // Raycast로 마우스 아래 유닛 감지
+            if (Physics.Raycast(InDungeonManager.Inst.ViewCamera.ScreenPointToRay(Input.mousePosition),
+                out hit, 500, LayerMask.GetMask(characterUnitLayerName)))
+            {
+                hit.collider.TryGetComponent(out hoveredUnit);
+            }
+
+            // 호버 상태 변경 확인 (최적화: 변경 시에만 UI 업데이트)
+            if (hoveredUnit != currentHoveredUnit)
+            {
+                // 이전 호버 해제
+                if (currentHoveredUnit != null)
+                {
+                    InDungeonManager.Inst.UISubsystem.SelectedUnitBarController.ClearHover();
+                }
+
+                // 새 유닛 호버 (적 유닛만)
+                if (hoveredUnit != null && hoveredUnit.IsAlive && hoveredUnit.IsEnemyUnit)
+                {
+                    InDungeonManager.Inst.UISubsystem.SelectedUnitBarController.HoverEnemyUnit(hoveredUnit.transform);
+                }
+
+                currentHoveredUnit = hoveredUnit;
+            }
+        }
+
+        /// <summary>
+        /// 유닛 클릭 처리 (기존 로직 분리)
+        /// </summary>
+        private void HandleUnitClick()
+        {
+            RaycastHit hit;
+            if (!Physics.Raycast(InDungeonManager.Inst.ViewCamera.ScreenPointToRay(Input.mousePosition),
+                out hit, 500, LayerMask.GetMask(characterUnitLayerName)))
+                return;
+
+            if (!hit.collider.TryGetComponent(out CharacterUnit clickedUnit))
+                return;
+
+            if (!clickedUnit.IsEnemyUnit)
+            {
+                InDungeonManager.Inst.SelectPlayerUnit(clickedUnit);
+                SelectedPlayerUnit = clickedUnit;
             }
         }
 
@@ -104,6 +152,14 @@ namespace DarkestLike.InDungeon.BattleSystem
                 Debug.LogError("[BattleSubsystem] 플레이어 유닛이 없습니다.");
                 return;
             }
+
+            // 배틀 시작 시 선택 바 초기화 (이전 배틀 잔여물 제거)
+            InDungeonManager.Inst.UISubsystem.SelectedUnitBarController.SetActivePlayerBar(false);
+            InDungeonManager.Inst.UISubsystem.SelectedUnitBarController.SetActiveEnemyBar(false);
+
+            // 호버 바 초기화
+            InDungeonManager.Inst.UISubsystem.SelectedUnitBarController.ClearHover();
+            currentHoveredUnit = null;
 
             // 유닛 리스트 저장
             this.playerUnits = new List<CharacterUnit>(playerUnitsList);
@@ -176,17 +232,20 @@ namespace DarkestLike.InDungeon.BattleSystem
 
                 availableUnits.Remove(currentUnit);
 
-                // 3. 기절 체크
+                // 3. 턴 시작 알림 (유닛 선택 - 기절 여부와 관계없이)
+                OnTurnStart(currentUnit);
+
+                // 4. 기절 체크
                 if (currentUnit.CharacterData.HasEffect(StatusEffectType.Stun))
                 {
                     Debug.Log($"[BattleLoop] {currentUnit.CharacterName}이(가) 기절 상태로 행동 불가!");
-                    // TODO: 턴 스킵 이벤트 발행
+                    // TODO: 턴 스킵 이벤트 발행, 기절 UI 표시
                     yield return new WaitForSeconds(1f);
+
+                    // 기절해도 턴 종료 처리 (선택 해제)
+                    OnTurnEnd(currentUnit);
                     continue;
                 }
-
-                // 4. 턴 시작 알림
-                OnTurnStart(currentUnit);
 
                 // 5. 행동 실행 (플레이어 or AI)
                 if (currentUnit.IsPlayerUnit)
@@ -274,20 +333,42 @@ namespace DarkestLike.InDungeon.BattleSystem
         }
 
         /// <summary>
-        /// 턴 시작 알림
+        /// 턴 시작 알림 및 유닛 자동 선택
         /// </summary>
         private void OnTurnStart(CharacterUnit unit)
         {
             Debug.Log($"[BattleSubsystem] {unit.CharacterName}의 턴 시작");
+
+            // 유닛 타입에 따라 자동 선택
+            if (unit.IsPlayerUnit)
+            {
+                InDungeonManager.Inst.SelectPlayerUnit(unit);
+            }
+            else
+            {
+                InDungeonManager.Inst.SelectEnemyUnit(unit);
+            }
+
             // TODO: 턴 시작 이벤트 발행
         }
 
         /// <summary>
-        /// 턴 종료 처리
+        /// 턴 종료 처리 및 선택 해제
         /// </summary>
         private void OnTurnEnd(CharacterUnit unit)
         {
             Debug.Log($"[BattleSubsystem] {unit.CharacterName}의 턴 종료");
+
+            // 턴 종료 시 선택 바 비활성화
+            if (unit.IsPlayerUnit)
+            {
+                InDungeonManager.Inst.UISubsystem.SelectedUnitBarController.SetActivePlayerBar(false);
+            }
+            else
+            {
+                InDungeonManager.Inst.UISubsystem.SelectedUnitBarController.SetActiveEnemyBar(false);
+            }
+
             unit.UpdateTurn();
         }
 
@@ -457,6 +538,16 @@ namespace DarkestLike.InDungeon.BattleSystem
         {
             Debug.Log($"[Death] {unit.CharacterName}이(가) 사망했습니다.");
 
+            // 사망한 유닛의 선택 바 즉시 비활성화
+            if (unit.IsPlayerUnit)
+            {
+                InDungeonManager.Inst.UISubsystem.SelectedUnitBarController.SetActivePlayerBar(false);
+            }
+            else
+            {
+                InDungeonManager.Inst.UISubsystem.SelectedUnitBarController.SetActiveEnemyBar(false);
+            }
+
             // TODO: 사망 애니메이션
             // unit.AnimController.PlayDeath();
 
@@ -529,6 +620,14 @@ namespace DarkestLike.InDungeon.BattleSystem
             ClearSelectedEnemy();
             SelectedSkill = null;
             SelectedPlayerUnit = null;
+
+            // UI 바도 비활성화
+            InDungeonManager.Inst.UISubsystem.SelectedUnitBarController.SetActivePlayerBar(false);
+            InDungeonManager.Inst.UISubsystem.SelectedUnitBarController.SetActiveEnemyBar(false);
+
+            // 호버 바도 비활성화
+            InDungeonManager.Inst.UISubsystem.SelectedUnitBarController.ClearHover();
+            currentHoveredUnit = null;
 
             // 전투 결과에 따른 처리
             switch (battleEndType)

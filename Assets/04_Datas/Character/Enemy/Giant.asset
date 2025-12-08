@@ -12,11 +12,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8cf7fb71d83d3604083d30dd86ea8f3a, type: 3}
   m_Name: Giant
   m_EditorClassIdentifier: 
-  maxHp: 0
-  attack: 0
-  defense: 0
-  speed: 0
-  evasion: 0
+  maxHp: 28
+  attack: 7
+  defense: 8
+  speed: 4
+  evasion: 4
   type: 0
   modelPrefab: {fileID: 4654069703838060078, guid: 411adfa6a3ab16441822d31c56ade3f8, type: 3}
   skills: []

@@ -37,6 +37,7 @@ namespace DarkestLike.InDungeon.Manager
         // Properties
         /// <summary> Character Container Controller /// </summary>
         public PartyController PartyCtrl => partyCtrl;
+        public UISubsystem UISubsystem => uiSubsystem;
         public RoomData CurrentRoom => mapSubsystem.CurrentRoom;
         public TileData CurrentTile => mapSubsystem.CurrentTile;
         public CurrentLocation CurrentLocation => mapSubsystem.CurrentLocation;

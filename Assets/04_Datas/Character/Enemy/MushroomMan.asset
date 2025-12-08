@@ -12,11 +12,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8cf7fb71d83d3604083d30dd86ea8f3a, type: 3}
   m_Name: MushroomMan
   m_EditorClassIdentifier: 
-  maxHp: 0
-  attack: 0
-  defense: 0
-  speed: 0
-  evasion: 0
-  type: 0
+  maxHp: 22
+  attack: 8
+  defense: 4
+  speed: 5
+  evasion: 5
+  type: 1
   modelPrefab: {fileID: 3828262810355870766, guid: 3df5756833b162a47b37e0c5f6ebaa93, type: 3}
   skills: []

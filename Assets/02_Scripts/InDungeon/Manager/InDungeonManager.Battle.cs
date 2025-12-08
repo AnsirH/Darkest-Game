@@ -41,6 +41,7 @@ namespace DarkestLike.InDungeon.Manager
         }
 
 
+        
         public void SelectPlayerUnit(CharacterUnit playerUnit)
         {
             uiSubsystem.OnSelectPlayerUnit(playerUnit);
@@ -49,11 +50,13 @@ namespace DarkestLike.InDungeon.Manager
         public void SelectEnemyUnit(CharacterUnit enemyUnit)
         {
             battleSubsystem.SelectEnemy(enemyUnit);
+            uiSubsystem.OnSelectEnemyUnit(enemyUnit);
         }
 
         public void SelectNone()
         {
             uiSubsystem.SelectedUnitBarController.SetActivePlayerBar(false);
+            uiSubsystem.SelectedUnitBarController.SetActiveEnemyBar(false);
         }
 
         public void SelectSkill(SkillBase skill)
