@@ -48,4 +48,12 @@ public class SkillBase : ScriptableObject
     [Range(0, 100)]
     [Tooltip("상태이상 적용 확률 (%)")]
     public int statusEffectChance = 100;
+
+    [Header("Healing")]
+    [Tooltip("이 스킬이 체력을 회복시키는지 여부 (회복량은 attackRatio를 사용)")]
+    public bool isHealing = false;
+
+    [Header("Self-Targeting")]
+    [Tooltip("시전자 자신을 대상으로 할 수 있는지 여부")]
+    public bool canTargetSelf = false;
 }

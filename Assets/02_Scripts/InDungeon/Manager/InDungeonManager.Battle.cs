@@ -55,8 +55,7 @@ namespace DarkestLike.InDungeon.Manager
 
         public void SelectNone()
         {
-            uiSubsystem.SelectedUnitBarController.SetActivePlayerBar(false);
-            uiSubsystem.SelectedUnitBarController.SetActiveEnemyBar(false);
+            uiSubsystem.SelectedUnitBarController.SetActiveSelectedBar(false);
         }
 
         public void SelectSkill(SkillBase skill)

@@ -17,7 +17,7 @@ MonoBehaviour:
   attackRatio: 10
   accuracy: 95
   timelineAsset: {fileID: 0}
-  canUseFromFront: 1
+  canUseFromFront: 0
   canUseFromBack: 1
   targetType: 0
   targetCount: 1

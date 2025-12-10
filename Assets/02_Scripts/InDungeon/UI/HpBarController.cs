@@ -43,7 +43,10 @@ namespace _02_Scripts.InDungeon.UI
             removedCharacterUnits.Add(targetUnit);
         }
 
-        private void UpdateHpBarValue(CharacterUnit targetUnit)
+        /// <summary>
+        /// 특정 유닛의 HP 바를 현재 HP에 맞춰 업데이트합니다.
+        /// </summary>
+        public void UpdateHpBarValue(CharacterUnit targetUnit)
         {
             if (targetUnit != null && hpBars.ContainsKey(targetUnit))
                 hpBars[targetUnit].SetHpBarPercent((float)targetUnit.CharacterData.CurrentHealth / targetUnit.CharacterData.MaxHealth);

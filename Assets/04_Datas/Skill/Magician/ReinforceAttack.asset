@@ -21,10 +21,12 @@ MonoBehaviour:
   canUseFromBack: 1
   targetType: 0
   targetCount: 1
-  canTargetFront: 1
-  canTargetBack: 1
+  canTargetFront: 0
+  canTargetBack: 0
   appliesStatusEffect: 1
   statusEffectType: 3
   statusEffectDuration: 3
   statusEffectValue: 3
   statusEffectChance: 100
+  isHealing: 0
+  canTargetSelf: 1

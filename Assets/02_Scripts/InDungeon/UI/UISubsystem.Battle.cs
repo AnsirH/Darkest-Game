@@ -1,3 +1,4 @@
+using DarkestLike.InDungeon.Manager;
 using DarkestLike.InDungeon.Unit;
 using UnityEngine;
 
@@ -16,14 +17,25 @@ namespace _02_Scripts.InDungeon.UI
             hpBarController.CreateHpBar(unit);
         }
 
+        /// <summary>
+        /// 유닛의 HP 바를 업데이트합니다.
+        /// </summary>
+        public void UpdateHpBar(CharacterUnit unit)
+        {
+            hpBarController.UpdateHpBarValue(unit);
+        }
+
         public void OnSelectPlayerUnit(CharacterUnit characterUnit)
         {
             battleHud.SetCharacterInfo(characterUnit);
-
-            SelectedUnitBarController.SetActivePlayerBar(true);
-            SelectedUnitBarController.SelectPlayerUnit(characterUnit.transform);
             battleHud.UpdateSkillIcon(characterUnit.CharacterData.Base.skills);
-            OnSelectPlayerSkill(characterUnit.CharacterData.Base.skills[0]);
+
+            // 선택 바 표시
+            SelectedUnitBarController.SelectUnit(characterUnit.transform);
+
+            // 첫 번째 스킬 자동 선택 (UI + BattleSubsystem 모두 업데이트)
+            var firstSkill = characterUnit.CharacterData.Base.skills[0];
+            InDungeonManager.Inst.SelectSkill(firstSkill);
         }
 
         /// <summary>
@@ -31,9 +43,8 @@ namespace _02_Scripts.InDungeon.UI
         /// </summary>
         public void OnSelectEnemyUnit(CharacterUnit enemyUnit)
         {
-            // 적 선택 바 활성화 및 타겟 설정
-            SelectedUnitBarController.SetActiveEnemyBar(true);
-            SelectedUnitBarController.SelectEnemyUnit(enemyUnit.transform);
+            // 선택 바 표시 (플레이어와 동일한 바 사용)
+            SelectedUnitBarController.SelectUnit(enemyUnit.transform);
 
             // 사용자 요구사항: 적 유닛은 정보 표시 안 함
             // battleHud.SetCharacterInfo() 호출하지 않음

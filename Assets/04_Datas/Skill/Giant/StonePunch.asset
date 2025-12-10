@@ -1,0 +1,30 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1d2e1412d269de34a9aec8e12c33edaf, type: 3}
+  m_Name: StonePunch
+  m_EditorClassIdentifier: 
+  description: "\uB3CC\uC8FC\uBA39 \uACF5\uACA9"
+  icon: {fileID: 0}
+  attackRatio: 95
+  accuracy: 90
+  timelineAsset: {fileID: 0}
+  canUseFromFront: 1
+  canUseFromBack: 0
+  targetType: 0
+  targetCount: 1
+  canTargetFront: 1
+  canTargetBack: 0
+  appliesStatusEffect: 0
+  statusEffectType: 0
+  statusEffectDuration: 3
+  statusEffectValue: 5
+  statusEffectChance: 100
