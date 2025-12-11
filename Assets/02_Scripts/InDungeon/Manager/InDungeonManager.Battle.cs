@@ -44,8 +44,8 @@ namespace DarkestLike.InDungeon.Manager
         
         public void SelectPlayerUnit(CharacterUnit playerUnit)
         {
+            battleSubsystem.SetSelectedPlayerUnit(playerUnit);
             uiSubsystem.OnSelectPlayerUnit(playerUnit);
-            
         }
         public void SelectEnemyUnit(CharacterUnit enemyUnit)
         {

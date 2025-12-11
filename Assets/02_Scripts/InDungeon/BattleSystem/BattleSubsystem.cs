@@ -145,12 +145,11 @@ namespace DarkestLike.InDungeon.BattleSystem
             if (!clickedUnit.IsEnemyUnit)
             {
                 InDungeonManager.Inst.SelectPlayerUnit(clickedUnit);
-                SelectedPlayerUnit = clickedUnit;
             }
         }
 
         /// <summary>
-        /// 배틀 중 타겟 클릭 처리 (적 또는 아군)
+        /// 배틀 중 타겟 클릭 처리 (적 또는 아군) - Multi 타겟 지원
         /// </summary>
         private void HandleTargetClick()
         {
@@ -163,25 +162,85 @@ namespace DarkestLike.InDungeon.BattleSystem
             // 지원 스킬 → 아군 타겟팅
             if (IsSupportiveSkill(SelectedSkill))
             {
-                if (clickedUnit.IsPlayerUnit && ValidateAllyTarget(clickedUnit, SelectedSkill, SelectedPlayerUnit))
+                if (!clickedUnit.IsPlayerUnit)
                 {
-                    SelectAlly(clickedUnit);
+                    Debug.Log($"[BattleSubsystem] 지원 스킬은 아군만 타겟할 수 있습니다.");
+                    return;
                 }
+
+                // Multi 타겟 스킬
+                if (IsMultiTargetSkill(SelectedSkill))
+                {
+                    // 클릭한 아군의 영역 검증
+                    if (!ValidateAllyTarget(clickedUnit, SelectedSkill, SelectedPlayerUnit))
+                    {
+                        Debug.Log($"[BattleSubsystem] {clickedUnit.CharacterName}이(가) 속한 영역을 타겟할 수 없습니다.");
+                        return;
+                    }
+
+                    // 영역 내 모든 아군 선택
+                    List<CharacterUnit> targetedAllies = GetTargetedUnitsInArea(clickedUnit, SelectedSkill, false);
+
+                    if (targetedAllies.Count > 0)
+                    {
+                        // 다중 아군 선택 (첫 번째 유닛을 대표로 설정)
+                        SelectedAllyUnit = targetedAllies[0];
+                        Debug.Log($"[BattleSubsystem] 아군 영역 선택: {targetedAllies.Count}명");
+                    }
+                }
+                // Single 타겟 스킬 (기존 로직)
                 else
                 {
-                    Debug.Log($"[BattleSubsystem] {clickedUnit.CharacterName}은(는) 타겟할 수 없습니다.");
+                    if (ValidateAllyTarget(clickedUnit, SelectedSkill, SelectedPlayerUnit))
+                    {
+                        SelectAlly(clickedUnit);
+                    }
+                    else
+                    {
+                        Debug.Log($"[BattleSubsystem] {clickedUnit.CharacterName}은(는) 타겟할 수 없습니다.");
+                    }
                 }
             }
-            // 공격 스킬 → 적 타겟팅 (기존)
+            // 공격 스킬 → 적 타겟팅
             else
             {
-                if (clickedUnit.IsEnemyUnit && ValidateTarget(clickedUnit, SelectedSkill))
+                if (!clickedUnit.IsEnemyUnit)
                 {
-                    InDungeonManager.Inst.SelectEnemyUnit(clickedUnit);
+                    Debug.Log($"[BattleSubsystem] 공격 스킬은 적만 타겟할 수 있습니다.");
+                    return;
                 }
+
+                // Multi 타겟 스킬
+                if (IsMultiTargetSkill(SelectedSkill))
+                {
+                    // 클릭한 적의 영역 검증
+                    if (!ValidateTarget(clickedUnit, SelectedSkill))
+                    {
+                        Debug.Log($"[BattleSubsystem] {clickedUnit.CharacterName}이(가) 속한 영역을 공격할 수 없습니다.");
+                        return;
+                    }
+
+                    // 영역 내 모든 적 선택
+                    List<CharacterUnit> targetedEnemies = GetTargetedUnitsInArea(clickedUnit, SelectedSkill, true);
+
+                    if (targetedEnemies.Count > 0)
+                    {
+                        // 다중 적 선택 (첫 번째 유닛을 대표로 설정)
+                        InDungeonManager.Inst.SelectEnemyUnit(targetedEnemies[0]);
+                        Debug.Log($"[BattleSubsystem] 적 영역 선택: {targetedEnemies.Count}명");
+                    }
+                }
+                // Single 타겟 스킬 (기존 로직)
                 else
                 {
-                    Debug.Log($"[BattleSubsystem] {clickedUnit.CharacterName}은(는) 공격할 수 없습니다.");
+                    if (ValidateTarget(clickedUnit, SelectedSkill))
+                    {
+                        InDungeonManager.Inst.SelectEnemyUnit(clickedUnit);
+                    }
+                    else
+                    {
+                        Debug.Log($"[BattleSubsystem] {clickedUnit.CharacterName}은(는) 공격할 수 없습니다.");
+                    }
                 }
             }
         }
@@ -213,9 +272,8 @@ namespace DarkestLike.InDungeon.BattleSystem
             InDungeonManager.Inst.UISubsystem.SelectedUnitBarController.ClearHover();
             currentHoveredUnit = null;
 
-            // 타겟 표시 바 초기화 (적 + 아군 모두)
-            InDungeonManager.Inst.UISubsystem.SelectedUnitBarController.ClearTargetableEnemies();
-            InDungeonManager.Inst.UISubsystem.SelectedUnitBarController.ClearTargetableAllies();
+            // 타겟 표시 바 초기화 (통합 Clear)
+            InDungeonManager.Inst.UISubsystem.SelectedUnitBarController.ClearTargetableUnits();
 
             // 유닛 리스트 저장
             this.playerUnits = new List<CharacterUnit>(playerUnitsList);
@@ -420,9 +478,8 @@ namespace DarkestLike.InDungeon.BattleSystem
             // 턴 종료 시 선택 바 비활성화
             InDungeonManager.Inst.UISubsystem.SelectedUnitBarController.SetActiveSelectedBar(false);
 
-            // 타겟 표시 바 정리 (적 + 아군 모두)
-            InDungeonManager.Inst.UISubsystem.SelectedUnitBarController.ClearTargetableEnemies();
-            InDungeonManager.Inst.UISubsystem.SelectedUnitBarController.ClearTargetableAllies();
+            // 타겟 표시 바 정리 (통합 Clear)
+            InDungeonManager.Inst.UISubsystem.SelectedUnitBarController.ClearTargetableUnits();
 
             unit.UpdateTurn();
         }
@@ -444,17 +501,24 @@ namespace DarkestLike.InDungeon.BattleSystem
             // 타겟 가능한 유닛 표시 (스킬이 이미 선택되어 있으므로)
             if (SelectedSkill != null)
             {
-                if (IsSupportiveSkill(SelectedSkill))
+                bool isSupportive = IsSupportiveSkill(SelectedSkill);
+                var targetableUnits = isSupportive
+                    ? GetTargetableAllies(SelectedSkill, playerUnit)
+                    : GetTargetableEnemies(SelectedSkill);
+
+                if (IsMultiTargetSkill(SelectedSkill))
                 {
-                    // 아군 표시
-                    var targetableAllies = GetTargetableAllies(SelectedSkill, playerUnit);
-                    InDungeonManager.Inst.UISubsystem.SelectedUnitBarController.ShowTargetableAllies(targetableAllies);
+                    InDungeonManager.Inst.UISubsystem.SelectedUnitBarController.ShowConnectionIndicators(
+                        targetableUnits,
+                        SelectedSkill.canTargetFront,
+                        SelectedSkill.canTargetBack,
+                        isSupportive);
                 }
                 else
                 {
-                    // 적 표시 (기존)
-                    var targetableEnemies = GetTargetableEnemies(SelectedSkill);
-                    InDungeonManager.Inst.UISubsystem.SelectedUnitBarController.ShowTargetableEnemies(targetableEnemies);
+                    InDungeonManager.Inst.UISubsystem.SelectedUnitBarController.ShowTargetableUnits(
+                        targetableUnits,
+                        isSupportive);
                 }
             }
 
@@ -477,12 +541,26 @@ namespace DarkestLike.InDungeon.BattleSystem
                 yield return null;
             }
 
-            // 최종 타겟 결정
-            CharacterUnit finalTarget = IsSupportiveSkill(SelectedSkill) ? SelectedAllyUnit : SelectedEnemyUnit;
-            Debug.Log($"[PlayerTurn] 행동 선택 완료: {SelectedSkill.description} → {finalTarget.CharacterName}");
+            // Multi 타겟 스킬 실행
+            if (IsMultiTargetSkill(SelectedSkill))
+            {
+                // 영역 내 모든 유닛 가져오기
+                bool isEnemyTarget = !IsSupportiveSkill(SelectedSkill);
+                CharacterUnit clickedUnit = isEnemyTarget ? SelectedEnemyUnit : SelectedAllyUnit;
+                List<CharacterUnit> targets = GetTargetedUnitsInArea(clickedUnit, SelectedSkill, isEnemyTarget);
 
-            // 스킬 실행
-            yield return StartCoroutine(ExecuteSkill(playerUnit, SelectedSkill, finalTarget));
+                Debug.Log($"[PlayerTurn] Multi 스킬 실행: {SelectedSkill.description} → {targets.Count}명");
+
+                yield return StartCoroutine(ExecuteSkillOnMultipleTargets(playerUnit, SelectedSkill, targets));
+            }
+            // Single 타겟 스킬 실행
+            else
+            {
+                CharacterUnit finalTarget = IsSupportiveSkill(SelectedSkill) ? SelectedAllyUnit : SelectedEnemyUnit;
+                Debug.Log($"[PlayerTurn] Single 스킬 실행: {SelectedSkill.description} → {finalTarget.CharacterName}");
+
+                yield return StartCoroutine(ExecuteSkill(playerUnit, SelectedSkill, finalTarget));
+            }
 
             // 선택 초기화
             SelectedSkill = null;
@@ -507,8 +585,22 @@ namespace DarkestLike.InDungeon.BattleSystem
 
             if (decision != null && decision.target != null)
             {
-                Debug.Log($"[AI] {enemyUnit.CharacterName}이(가) {decision.selectedSkill.description}(을)를 {decision.target.CharacterName}에게 사용");
-                yield return StartCoroutine(ExecuteSkill(enemyUnit, decision.selectedSkill, decision.target));
+                // Multi 타겟 스킬
+                if (IsMultiTargetSkill(decision.selectedSkill))
+                {
+                    // AI가 선택한 타겟이 속한 영역의 모든 유닛 가져오기
+                    bool isEnemyTarget = !IsSupportiveSkill(decision.selectedSkill);
+                    List<CharacterUnit> targets = GetTargetedUnitsInArea(decision.target, decision.selectedSkill, isEnemyTarget);
+
+                    Debug.Log($"[AI] {enemyUnit.CharacterName}이(가) Multi 스킬 {decision.selectedSkill.description}(을)를 {targets.Count}명에게 사용");
+                    yield return StartCoroutine(ExecuteSkillOnMultipleTargets(enemyUnit, decision.selectedSkill, targets));
+                }
+                // Single 타겟 스킬
+                else
+                {
+                    Debug.Log($"[AI] {enemyUnit.CharacterName}이(가) {decision.selectedSkill.description}(을)를 {decision.target.CharacterName}에게 사용");
+                    yield return StartCoroutine(ExecuteSkill(enemyUnit, decision.selectedSkill, decision.target));
+                }
             }
             else
             {
@@ -642,6 +734,138 @@ namespace DarkestLike.InDungeon.BattleSystem
         }
 
         /// <summary>
+        /// 다중 타겟에게 스킬 실행 (Multi 타겟용)
+        /// </summary>
+        private IEnumerator ExecuteSkillOnMultipleTargets(CharacterUnit caster, SkillBase skill, List<CharacterUnit> targets)
+        {
+            battleState = BattleState.Action;
+
+            // 1. 포지션 검증
+            if (!ValidateSkillPosition(caster, skill))
+            {
+                Debug.LogWarning($"[ExecuteSkill] {caster.CharacterName}의 포지션에서 {skill.description}를 사용할 수 없습니다.");
+                yield break;
+            }
+
+            if (targets == null || targets.Count == 0)
+            {
+                Debug.LogWarning($"[ExecuteSkillOnMultipleTargets] 타겟이 없습니다.");
+                yield break;
+            }
+
+            Debug.Log($"[ExecuteSkillOnMultipleTargets] {caster.CharacterName}이(가) {targets.Count}명에게 {skill.description} 사용");
+
+            // 2. 애니메이션 재생
+            if (skill.timelineAsset != null)
+            {
+                // yield return StartCoroutine(PlaySkillAnimation(caster, skill));
+                Debug.Log($"[Skill] 애니메이션 재생: {skill.description}");
+            }
+
+            // 3. 지원 스킬 처리 (회복/버프)
+            if (IsSupportiveSkill(skill))
+            {
+                foreach (var target in targets)
+                {
+                    if (target == null || !target.IsAlive) continue;
+
+                    // 힐링 처리
+                    if (skill.isHealing)
+                    {
+                        int healAmount = (int)(caster.CharacterData.Attack * (skill.attackRatio / 100f));
+                        int healedAmount = target.CharacterData.Heal(healAmount);
+
+                        Debug.Log($"[Heal] {caster.CharacterName}이(가) {target.CharacterName}을(를) {healedAmount} 회복!");
+                        Debug.Log($"[Heal] {target.CharacterName} HP: {target.CharacterData.CurrentHealth}/{target.CharacterData.MaxHealth}");
+
+                        // HP바 업데이트 (동시 적용)
+                        InDungeonManager.Inst.UISubsystem.UpdateHpBar(target);
+                    }
+
+                    // 버프 적용
+                    if (skill.appliesStatusEffect && skill.statusEffectType == StatusEffectType.Buff)
+                    {
+                        int roll = Random.Range(0, 100);
+                        if (roll < skill.statusEffectChance)
+                        {
+                            var effect = new StatusEffect(
+                                skill.statusEffectType,
+                                skill.statusEffectDuration,
+                                skill.statusEffectValue,
+                                skill.description
+                            );
+                            target.CharacterData.AddStatusEffect(effect);
+
+                            Debug.Log($"[Buff] {target.CharacterName}에게 {effect.type} 효과 적용!");
+                        }
+                    }
+                }
+
+                yield return new WaitForSeconds(0.5f);
+                yield break;
+            }
+
+            // 4. 공격 스킬 처리 (모든 타겟에 동시 적용)
+            List<CharacterUnit> deadUnits = new List<CharacterUnit>();
+
+            foreach (var target in targets)
+            {
+                if (target == null || !target.IsAlive) continue;
+
+                // 데미지 계산 및 적용
+                DamageResult result = DamageCalculator.CalculateDamage(caster, target, skill);
+
+                if (result.isMiss)
+                {
+                    Debug.Log($"[Combat] {caster.CharacterName}의 {target.CharacterName}에 대한 공격이 빗나갔습니다!");
+                }
+                else
+                {
+                    // 데미지 적용
+                    target.TakeDamage(result.damage);
+
+                    Debug.Log($"[Combat] {caster.CharacterName}이(가) {target.CharacterName}에게 {result.damage} 데미지!");
+                    Debug.Log($"[Combat] {target.CharacterName} HP: {target.CharacterData.CurrentHealth}/{target.CharacterData.MaxHealth}");
+
+                    // HP바 업데이트 (동시 적용)
+                    InDungeonManager.Inst.UISubsystem.UpdateHpBar(target);
+
+                    // 상태이상 적용
+                    if (skill.appliesStatusEffect)
+                    {
+                        int roll = Random.Range(0, 100);
+                        if (roll < skill.statusEffectChance)
+                        {
+                            var effect = new StatusEffect(
+                                skill.statusEffectType,
+                                skill.statusEffectDuration,
+                                skill.statusEffectValue,
+                                skill.description
+                            );
+                            target.CharacterData.AddStatusEffect(effect);
+
+                            Debug.Log($"[StatusEffect] {target.CharacterName}에게 {effect.type} 효과 적용!");
+                        }
+                    }
+
+                    // 사망 체크 (나중에 일괄 처리)
+                    if (target.IsDead && !deadUnits.Contains(target))
+                    {
+                        deadUnits.Add(target);
+                    }
+                }
+            }
+
+            // 5. 사망 처리 (일괄)
+            foreach (var deadUnit in deadUnits)
+            {
+                yield return StartCoroutine(HandleUnitDeath(deadUnit));
+            }
+
+            yield return new WaitForSeconds(0.5f);
+        }
+
+        /// <summary>
         /// 스킬 포지션 검증
         /// </summary>
         private bool ValidateSkillPosition(CharacterUnit caster, SkillBase skill)
@@ -726,19 +950,24 @@ namespace DarkestLike.InDungeon.BattleSystem
             // 스킬 선택 시 타겟 가능한 유닛 표시
             if (skill != null && isBattleActive && battleState == BattleState.PlayerTurn)
             {
-                if (IsSupportiveSkill(skill))
+                bool isSupportive = IsSupportiveSkill(skill);
+                var targetableUnits = isSupportive
+                    ? GetTargetableAllies(skill, SelectedPlayerUnit)
+                    : GetTargetableEnemies(skill);
+
+                if (IsMultiTargetSkill(skill))
                 {
-                    // 아군 타겟팅
-                    var targetableAllies = GetTargetableAllies(skill, SelectedPlayerUnit);
-                    InDungeonManager.Inst.UISubsystem.SelectedUnitBarController.ShowTargetableAllies(targetableAllies);
-                    InDungeonManager.Inst.UISubsystem.SelectedUnitBarController.ClearTargetableEnemies();
+                    InDungeonManager.Inst.UISubsystem.SelectedUnitBarController.ShowConnectionIndicators(
+                        targetableUnits,
+                        skill.canTargetFront,
+                        skill.canTargetBack,
+                        isSupportive);
                 }
                 else
                 {
-                    // 적 타겟팅 (기존)
-                    var targetableEnemies = GetTargetableEnemies(skill);
-                    InDungeonManager.Inst.UISubsystem.SelectedUnitBarController.ShowTargetableEnemies(targetableEnemies);
-                    InDungeonManager.Inst.UISubsystem.SelectedUnitBarController.ClearTargetableAllies();
+                    InDungeonManager.Inst.UISubsystem.SelectedUnitBarController.ShowTargetableUnits(
+                        targetableUnits,
+                        isSupportive);
                 }
             }
         }
@@ -781,22 +1010,89 @@ namespace DarkestLike.InDungeon.BattleSystem
         }
 
         /// <summary>
+        /// 스킬이 Multi 타겟 스킬인지 확인
+        /// </summary>
+        private bool IsMultiTargetSkill(SkillBase skill)
+        {
+            if (skill == null) return false;
+            return skill.targetType == TargetType.Multi;
+        }
+
+        /// <summary>
+        /// 클릭한 유닛의 영역에 속한 모든 타겟 유닛 반환
+        /// </summary>
+        /// <param name="clickedUnit">클릭한 유닛</param>
+        /// <param name="skill">선택된 스킬</param>
+        /// <param name="isEnemyTarget">적 타겟팅 여부 (true: 적, false: 아군)</param>
+        /// <returns>영역에 속한 모든 유닛 리스트</returns>
+        private List<CharacterUnit> GetTargetedUnitsInArea(CharacterUnit clickedUnit, SkillBase skill, bool isEnemyTarget)
+        {
+            List<CharacterUnit> result = new List<CharacterUnit>();
+
+            if (clickedUnit == null || skill == null) return result;
+
+            // 타겟 유닛 리스트 선택
+            List<CharacterUnit> targetList = isEnemyTarget ? enemyUnits : playerUnits;
+
+            // 전열 + 후열 모두 타겟 가능 → 전체 공격
+            if (skill.canTargetFront && skill.canTargetBack)
+            {
+                foreach (var unit in targetList)
+                {
+                    if (unit != null && unit.IsAlive)
+                        result.Add(unit);
+                }
+            }
+            // 전열만 타겟 가능 → 클릭한 유닛이 전열이면 전열 전체
+            else if (skill.canTargetFront && !skill.canTargetBack)
+            {
+                if (clickedUnit.Position == UnitPosition.Front)
+                {
+                    foreach (var unit in targetList)
+                    {
+                        if (unit != null && unit.IsAlive && unit.Position == UnitPosition.Front)
+                            result.Add(unit);
+                    }
+                }
+            }
+            // 후열만 타겟 가능 → 클릭한 유닛이 후열이면 후열 전체
+            else if (!skill.canTargetFront && skill.canTargetBack)
+            {
+                if (clickedUnit.Position == UnitPosition.Back)
+                {
+                    foreach (var unit in targetList)
+                    {
+                        if (unit != null && unit.IsAlive && unit.Position == UnitPosition.Back)
+                            result.Add(unit);
+                    }
+                }
+            }
+
+            return result;
+        }
+
+        /// <summary>
         /// 선택된 스킬로 타겟 가능한 아군 유닛 리스트 반환
         /// </summary>
         private List<CharacterUnit> GetTargetableAllies(SkillBase skill, CharacterUnit caster)
         {
             List<CharacterUnit> targetable = new List<CharacterUnit>();
 
-            if (skill == null || playerUnits == null) return targetable;
+            if (!skill || playerUnits == null) return targetable;
 
             foreach (var ally in playerUnits)
             {
-                if (ally == null || !ally.IsAlive) continue;
+                if (!ally || !ally.IsAlive) continue;
 
-                // 자기 자신 타겟팅 체크
-                if (ally == caster && !skill.canTargetSelf) continue;
+                // 자기 자신 타겟팅 - canTargetSelf가 true면 포지션 무관하게 추가
+                if (ally == caster)
+                {
+                    if (skill.canTargetSelf)
+                        targetable.Add(ally);
+                    continue;
+                }
 
-                // 포지션 기반 타겟팅 검증
+                // 다른 아군 타겟팅 - 포지션 기반 검증
                 if (ally.Position == UnitPosition.Front && skill.canTargetFront)
                     targetable.Add(ally);
                 else if (ally.Position == UnitPosition.Back && skill.canTargetBack)
@@ -811,17 +1107,25 @@ namespace DarkestLike.InDungeon.BattleSystem
         /// </summary>
         private bool ValidateAllyTarget(CharacterUnit target, SkillBase skill, CharacterUnit caster)
         {
-            if (!target.IsAlive) return false;
-            if (!target.IsPlayerUnit) return false;
+            if (!target.IsAlive || !target.IsPlayerUnit) return false;
 
-            // 자기 자신 타겟팅 체크
-            if (target == caster && !skill.canTargetSelf) return false;
+            // 자기 자신 타겟팅 - canTargetSelf가 true면 포지션 무관하게 허용
+            if (target == caster)
+                return skill.canTargetSelf;
 
-            // 포지션 검증
+            // 다른 아군 타겟팅 - 포지션 검증
             if (target.Position == UnitPosition.Front && !skill.canTargetFront) return false;
             if (target.Position == UnitPosition.Back && !skill.canTargetBack) return false;
 
             return true;
+        }
+
+        /// <summary>
+        /// 현재 턴 플레이어 유닛 설정
+        /// </summary>
+        public void SetSelectedPlayerUnit(CharacterUnit playerUnit)
+        {
+            SelectedPlayerUnit = playerUnit;
         }
 
         /// <summary>
@@ -874,9 +1178,8 @@ namespace DarkestLike.InDungeon.BattleSystem
             InDungeonManager.Inst.UISubsystem.SelectedUnitBarController.ClearHover();
             currentHoveredUnit = null;
 
-            // 타겟 표시 바 정리 (적 + 아군 모두)
-            InDungeonManager.Inst.UISubsystem.SelectedUnitBarController.ClearTargetableEnemies();
-            InDungeonManager.Inst.UISubsystem.SelectedUnitBarController.ClearTargetableAllies();
+            // 타겟 표시 바 정리 (통합 Clear)
+            InDungeonManager.Inst.UISubsystem.SelectedUnitBarController.ClearTargetableUnits();
 
             // 전투 결과에 따른 처리
             switch (battleEndType)
@@ -1065,13 +1368,6 @@ namespace DarkestLike.InDungeon.BattleSystem
 
                 Debug.Log($"[Push] {unit.CharacterName}을(를) 포지션 {newIndex}(으)로 이동");
             }
-        }
-        
-        
-
-        public void SetSelectedPlayerUnit(CharacterUnit unit)
-        {
-            SelectedPlayerUnit = unit;
         }
 
         /// <summary>

@@ -10,7 +10,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 1d2e1412d269de34a9aec8e12c33edaf, type: 3}
-  m_Name: GunAttack
+  m_Name: DoubleGunAttack
   m_EditorClassIdentifier: 
   description: "\uCD1D\uC744 \uBE60\uB974\uAC8C \uB09C\uC0AC\uD558\uC5EC \uC804\uBC29
     2\uC5F4\uC5D0 \uBC94\uC704 \uD53C\uD574\uB97C \uC900\uB2E4."
@@ -20,7 +20,7 @@ MonoBehaviour:
   timelineAsset: {fileID: 0}
   canUseFromFront: 1
   canUseFromBack: 1
-  targetType: 0
+  targetType: 1
   targetCount: 1
   canTargetFront: 1
   canTargetBack: 1
@@ -29,3 +29,5 @@ MonoBehaviour:
   statusEffectDuration: 3
   statusEffectValue: 5
   statusEffectChance: 100
+  isHealing: 0
+  canTargetSelf: 0

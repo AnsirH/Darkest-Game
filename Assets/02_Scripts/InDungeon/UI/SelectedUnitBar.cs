@@ -3,30 +3,22 @@ using UnityEngine;
 
 namespace _02_Scripts.InDungeon.UI
 {
-    public class SelectedUnitBar : MonoBehaviour, IFollowingBar
+    public class SelectedUnitBar : MonoBehaviour
     {
         private Vector3 offset;
-        private Camera viewCamera;
-        private Transform target;
         private RectTransform rectTransform;
 
         private void Awake()
         {
-            rectTransform ??= GetComponent<RectTransform>();
+            rectTransform = GetComponent<RectTransform>();
         }
 
-        public void UpdatePosition()
-        {
-            if (target is null || viewCamera is null) return;
-            if (!target.gameObject.activeInHierarchy) return;
-
-            rectTransform.position = viewCamera.WorldToScreenPoint(target.position) + offset;
-        }
-        
         public void SetOffset(Vector3 newOffset) { offset = newOffset; }
 
-        public void SetTarget(Transform newTarget) { target = newTarget; }
-
-        public void SetViewCamera(Camera newCamera) { viewCamera = newCamera; }
+        public void SetTarget(Vector3 screenPosition)
+        {
+            rectTransform ??= GetComponent<RectTransform>();
+            rectTransform.position = screenPosition + offset;
+        }
     }
 }

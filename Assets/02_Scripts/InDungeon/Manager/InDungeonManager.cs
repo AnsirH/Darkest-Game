@@ -51,7 +51,6 @@ namespace DarkestLike.InDungeon.Manager
             uiSubsystem.GenerateMapUI(mapSubsystem.MapData);
             CreatePlayerCharacter(characterDatas);
             uiSubsystem.OnSelectPlayerUnit(unitSubsystem.PlayerUnits[0]);
-            uiSubsystem.SelectedUnitBarController.SelectUnit(unitSubsystem.PlayerUnits[0].transform);
             EnterRoom(mapData.StartRoom);
         }
 
