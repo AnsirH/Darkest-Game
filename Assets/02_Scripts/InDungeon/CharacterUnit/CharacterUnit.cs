@@ -171,5 +171,10 @@ namespace DarkestLike.InDungeon.Unit
         {
             positionMaintainer.SetTarget(target);
         }
+
+        public void SetMoveTime(float moveSpeed)
+        {
+            positionMaintainer.SetMoveTime(moveSpeed);
+        }
     }
 }

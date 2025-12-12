@@ -11,7 +11,7 @@ namespace DarkestLike.InDungeon
 
         [Header("Variables")]
         public float moveTime = 1.0f;
-        public float maxSpeed = 10.0f;
+        public float maxSpeed = 20.0f;
         public float allowedDistance = 0.05f;
         public bool isLimited = false;
         
@@ -41,7 +41,7 @@ namespace DarkestLike.InDungeon
         }
 
         public void SetTarget(Transform newTarget) { targetPoint = newTarget; }
-        public void SetMoveTime(float newMoveTime) { this.moveTime = newMoveTime; }
+        public void SetMoveTime(float newMoveTime) { moveTime = newMoveTime; }
 
         public void SetPosition(Vector3 newPosition) { transform.position = newPosition; }
 

@@ -15,7 +15,7 @@ namespace _02_Scripts.InDungeon.UI
 
         public void SetOffset(Vector3 newOffset) { offset = newOffset; }
 
-        public void SetTarget(Vector3 screenPosition)
+        public void SetPosition(Vector3 screenPosition)
         {
             rectTransform ??= GetComponent<RectTransform>();
             rectTransform.position = screenPosition + offset;

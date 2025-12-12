@@ -45,7 +45,17 @@ namespace DarkestLike.InDungeon.Manager
         public void SelectPlayerUnit(CharacterUnit playerUnit)
         {
             battleSubsystem.SetSelectedPlayerUnit(playerUnit);
-            uiSubsystem.OnSelectPlayerUnit(playerUnit);
+
+            // 스킬 사용 가능 여부 판별 (BattleSubsystem에서 비즈니스 로직 처리)
+            var skills = playerUnit.CharacterData.Base.skills;
+            bool[] skillUsableFlags = new bool[skills.Length];
+            for (int i = 0; i < skills.Length; i++)
+            {
+                skillUsableFlags[i] = battleSubsystem.ValidateSkillPosition(playerUnit, skills[i]);
+            }
+
+            // UI에 데이터 전달 (단방향 흐름)
+            uiSubsystem.OnSelectPlayerUnit(playerUnit, skillUsableFlags);
         }
         public void SelectEnemyUnit(CharacterUnit enemyUnit)
         {

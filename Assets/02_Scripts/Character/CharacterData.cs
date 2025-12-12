@@ -155,9 +155,9 @@ namespace DarkestLike.Character
         }
 
         /// <summary>
-        /// 턴 종료시 상태이상을 처리합니다.
+        /// 턴 시작시 상태이상을 처리합니다.
         /// </summary>
-        public List<StatusEffectResult> ProcessEndOfTurn()
+        public List<StatusEffectResult> ProcessStartOfTurn()
         {
             List<StatusEffectResult> results = new List<StatusEffectResult>();
 

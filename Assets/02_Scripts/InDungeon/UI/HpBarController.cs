@@ -13,18 +13,13 @@ namespace _02_Scripts.InDungeon.UI
         public Vector3 offset;
         [SerializeField] private HpBar hpBarPrefab;
         private Dictionary<CharacterUnit, HpBar> hpBars = new();
-        private List<CharacterUnit> removedCharacterUnits = new();
-        
+
         private void Update()
         {
             foreach (var hpBar in hpBars.Values)
             {
                 hpBar.UpdatePosition();
             }
-            
-            // 삭제된 유닛의 체력바 삭제
-            while (removedCharacterUnits.Count > 0)
-                hpBars.Remove(removedCharacterUnits[^1]);
         }
         
         public void CreateHpBar(CharacterUnit targetUnit)
@@ -40,7 +35,11 @@ namespace _02_Scripts.InDungeon.UI
 
         public void RemoveHpBar(CharacterUnit targetUnit)
         {
-            removedCharacterUnits.Add(targetUnit);
+            if (hpBars.TryGetValue(targetUnit, out HpBar hpBar))
+            {
+                Destroy(hpBar.gameObject);
+                hpBars.Remove(targetUnit);
+            }
         }
 
         /// <summary>

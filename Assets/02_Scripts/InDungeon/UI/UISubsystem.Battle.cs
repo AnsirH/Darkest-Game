@@ -25,17 +25,32 @@ namespace _02_Scripts.InDungeon.UI
             hpBarController.UpdateHpBarValue(unit);
         }
 
-        public void OnSelectPlayerUnit(CharacterUnit characterUnit)
+        /// <summary>
+        /// 유닛의 HP 바를 제거합니다.
+        /// </summary>
+        public void RemoveHpBar(CharacterUnit unit)
+        {
+            hpBarController.RemoveHpBar(unit);
+        }
+
+        public void OnSelectPlayerUnit(CharacterUnit characterUnit, bool[] skillUsableFlags)
         {
             battleHud.SetCharacterInfo(characterUnit);
-            battleHud.UpdateSkillIcon(characterUnit.CharacterData.Base.skills);
+            battleHud.UpdateSkillIcon(characterUnit.CharacterData.Base.skills, skillUsableFlags);
 
             // 선택 바 표시
             SelectedUnitBarController.SelectUnit(characterUnit.transform);
 
-            // 첫 번째 스킬 자동 선택 (UI + BattleSubsystem 모두 업데이트)
-            var firstSkill = characterUnit.CharacterData.Base.skills[0];
-            InDungeonManager.Inst.SelectSkill(firstSkill);
+            // 첫 번째 사용 가능한 스킬 자동 선택
+            var skills = characterUnit.CharacterData.Base.skills;
+            for (int i = 0; i < skills.Length; i++)
+            {
+                if (skillUsableFlags[i])
+                {
+                    InDungeonManager.Inst.SelectSkill(skills[i]);
+                    break;
+                }
+            }
         }
 
         /// <summary>

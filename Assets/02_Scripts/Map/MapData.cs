@@ -234,6 +234,15 @@ namespace DarkestLike.Map
             }
             return false;
         }
+
+        /// <summary>
+        /// 배틀 클리어 후 방 데이터 초기화
+        /// </summary>
+        public void ClearBattleData()
+        {
+            RoomType = RoomType.None;
+            enemyGroup = null;
+        }
     }
 
     /// <summary>
@@ -313,5 +322,14 @@ namespace DarkestLike.Map
         /// </summary>
         /// <param name="enemyGroup">설정할 적 그룹</param>
         public void SetEnemyGroup(EnemyGroup enemyGroup) { EnemyGroup = enemyGroup; }
+
+        /// <summary>
+        /// 배틀 클리어 후 타일 데이터 초기화
+        /// </summary>
+        public void ClearBattleData()
+        {
+            type = TileType.None;
+            EnemyGroup = null;
+        }
     }
 }

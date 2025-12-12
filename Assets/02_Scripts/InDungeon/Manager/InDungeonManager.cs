@@ -38,6 +38,7 @@ namespace DarkestLike.InDungeon.Manager
         /// <summary> Character Container Controller /// </summary>
         public PartyController PartyCtrl => partyCtrl;
         public UISubsystem UISubsystem => uiSubsystem;
+        public CameraSubsystem CameraSubsystem => cameraSubsystem;
         public RoomData CurrentRoom => mapSubsystem.CurrentRoom;
         public TileData CurrentTile => mapSubsystem.CurrentTile;
         public CurrentLocation CurrentLocation => mapSubsystem.CurrentLocation;
@@ -50,7 +51,7 @@ namespace DarkestLike.InDungeon.Manager
             mapSubsystem.SetMapData(mapData);
             uiSubsystem.GenerateMapUI(mapSubsystem.MapData);
             CreatePlayerCharacter(characterDatas);
-            uiSubsystem.OnSelectPlayerUnit(unitSubsystem.PlayerUnits[0]);
+            SelectPlayerUnit(unitSubsystem.PlayerUnits[0]);  // 비즈니스 로직을 거쳐서 UI 업데이트
             EnterRoom(mapData.StartRoom);
         }
 
