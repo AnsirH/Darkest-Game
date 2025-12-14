@@ -31,11 +31,14 @@ namespace DarkestLike.InDungeon.Manager
             for (int i = 0; i < enemyDatas.Count; i++)
             {
                 if (unitSubsystem.AddEnemyCharacter(enemyDatas[i], battleSubsystem.EnemyPositions[i], out CharacterUnit createdUnit))
+                {
                     uiSubsystem.CreateHpBar(createdUnit);
+                    uiSubsystem.CreateStatusEffectBar(createdUnit);
+                }
             }
             
             if (mapSubsystem.CurrentLocation == CurrentLocation.Room)
-                battleSubsystem.StartBattle(unitSubsystem.PlayerUnits, unitSubsystem.EnemyUnits, Vector3.zero);
+                battleSubsystem.StartBattle(unitSubsystem.PlayerUnits, unitSubsystem.EnemyUnits, Vector3.right * 2.5f);
             else if (mapSubsystem.CurrentLocation == CurrentLocation.Hallway)
                 battleSubsystem.StartBattle(unitSubsystem.PlayerUnits, unitSubsystem.EnemyUnits, mapSubsystem.CurrentTile.Position);
         }

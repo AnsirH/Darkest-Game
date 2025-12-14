@@ -230,5 +230,27 @@ namespace DarkestLike.Map
             if (roomNodes.TryGetValue(roomData, out MapRoomNode roomBtn))
                 roomBtn.button.interactable = active;
         }
+
+        /// <summary>
+        /// 방의 UI 이미지를 업데이트합니다 (배틀 클리어 후 빈 방으로 표시)
+        /// </summary>
+        public void UpdateRoomUI(RoomData roomData)
+        {
+            if (roomNodes.TryGetValue(roomData, out MapRoomNode roomUI))
+            {
+                roomUI.UpdateImage(roomData.RoomType);
+            }
+        }
+
+        /// <summary>
+        /// 타일의 UI 이미지를 업데이트합니다 (배틀 클리어 후 빈 타일로 표시)
+        /// </summary>
+        public void UpdateTileUI(TileData tileData)
+        {
+            if (tileNodes.TryGetValue(tileData, out MapNode tileUI))
+            {
+                tileUI.UpdateImage(tileData.type);
+            }
+        }
     }
 }

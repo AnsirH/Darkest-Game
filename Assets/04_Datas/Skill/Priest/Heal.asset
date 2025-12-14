@@ -29,4 +29,4 @@ MonoBehaviour:
   statusEffectValue: 3
   statusEffectChance: 100
   isHealing: 1
-  canTargetSelf: 0
+  canTargetSelf: 1

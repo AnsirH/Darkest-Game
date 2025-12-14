@@ -49,5 +49,13 @@ namespace DarkestLike.InDungeon
             newUnit.Initialize(newCharacterData, positionTarget, isEnemy);
             return newUnit;
         }
+
+        /// <summary>
+        /// 모든 적 캐릭터를 제거합니다 (배틀 종료 시 호출)
+        /// </summary>
+        public void ClearEnemyCharacters()
+        {
+            enemyCharacters.Clear();
+        }
     }
 }

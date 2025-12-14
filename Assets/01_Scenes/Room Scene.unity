@@ -553,6 +553,61 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 5555892237923938370, guid: 0eb96a04fbda9a84996374dae56947b9, type: 3}
   m_PrefabInstance: {fileID: 1115680855}
   m_PrefabAsset: {fileID: 0}
+--- !u!1 &235501975
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 235501976}
+  - component: {fileID: 235501977}
+  m_Layer: 5
+  m_Name: Status Effect Icon Pool
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!224 &235501976
+RectTransform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 235501975}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1720934170}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_AnchorMin: {x: 0.5, y: 0.5}
+  m_AnchorMax: {x: 0.5, y: 0.5}
+  m_AnchoredPosition: {x: 0, y: 0}
+  m_SizeDelta: {x: 100, y: 100}
+  m_Pivot: {x: 0.5, y: 0.5}
+--- !u!114 &235501977
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 235501975}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fb895e14ff2dfa54798cae0d569581ba, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  iconPrefab: {fileID: 5673966894680183956, guid: 9c9c68191b2c6c64b9e32729dc25a8f7, type: 3}
+  poolParent: {fileID: 235501976}
+  poisonSprite: {fileID: 1551294400, guid: be81d63642574934fa7ad909f5527f1b, type: 3}
+  bleedSprite: {fileID: -1509395280, guid: be81d63642574934fa7ad909f5527f1b, type: 3}
+  stunSprite: {fileID: 180984990, guid: be81d63642574934fa7ad909f5527f1b, type: 3}
+  buffSprite: {fileID: 1499955692, guid: be81d63642574934fa7ad909f5527f1b, type: 3}
+  debuffSprite: {fileID: 793845687, guid: be81d63642574934fa7ad909f5527f1b, type: 3}
 --- !u!1 &273907703
 GameObject:
   m_ObjectHideFlags: 0
@@ -771,6 +826,7 @@ MonoBehaviour:
   icon: {fileID: 1100476800}
   defaultColor: {r: 0, g: 0, b: 0, a: 1}
   selectedColor: {r: 0.5294118, g: 0.4392157, b: 0.11372549, a: 1}
+  disabledColor: {r: 0.5, g: 0.5, b: 0.5, a: 1}
 --- !u!114 &329183432
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1433,6 +1489,7 @@ MonoBehaviour:
   icon: {fileID: 1319076011}
   defaultColor: {r: 0, g: 0, b: 0, a: 1}
   selectedColor: {r: 0.5294118, g: 0.4392157, b: 0.11372549, a: 1}
+  disabledColor: {r: 0.5, g: 0.5, b: 0.5, a: 1}
 --- !u!114 &578003864
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1885,6 +1942,7 @@ MonoBehaviour:
   icon: {fileID: 1422083519}
   defaultColor: {r: 0, g: 0, b: 0, a: 1}
   selectedColor: {r: 0.5294118, g: 0.4392157, b: 0.11372549, a: 1}
+  disabledColor: {r: 0.5, g: 0.5, b: 0.5, a: 1}
 --- !u!114 &859234102
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2054,6 +2112,7 @@ MonoBehaviour:
   icon: {fileID: 1170529338}
   defaultColor: {r: 0, g: 0, b: 0, a: 1}
   selectedColor: {r: 0.5294118, g: 0.4392157, b: 0.11372549, a: 1}
+  disabledColor: {r: 0.5, g: 0.5, b: 0.5, a: 1}
 --- !u!114 &956918595
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -4611,6 +4670,57 @@ Transform:
   m_Children: []
   m_Father: {fileID: 449415626}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &1573103245
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1573103246}
+  - component: {fileID: 1573103247}
+  m_Layer: 5
+  m_Name: Status Effect Bar Controller
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!224 &1573103246
+RectTransform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1573103245}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1720934170}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_AnchorMin: {x: 0.5, y: 0.5}
+  m_AnchorMax: {x: 0.5, y: 0.5}
+  m_AnchoredPosition: {x: 0, y: 0}
+  m_SizeDelta: {x: 100, y: 100}
+  m_Pivot: {x: 0.5, y: 0.5}
+--- !u!114 &1573103247
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1573103245}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 37d5c7faf4f575d43af491e1204176f3, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  offset: {x: 0, y: -20, z: 0}
+  statusEffectBarPrefab: {fileID: 4035524084491898470, guid: 13bbe7b9fe317c34394ce49649d9beb6, type: 3}
+  iconPool: {fileID: 235501977}
 --- !u!1 &1573848236
 GameObject:
   m_ObjectHideFlags: 0
@@ -5143,6 +5253,8 @@ RectTransform:
   - {fileID: 1775342684}
   - {fileID: 1380033314}
   - {fileID: 720101586}
+  - {fileID: 1573103246}
+  - {fileID: 235501976}
   m_Father: {fileID: 449415626}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
@@ -5165,6 +5277,7 @@ MonoBehaviour:
   battleHud: {fileID: 1073142007}
   hpBarController: {fileID: 1775342685}
   selectedUnitBarController: {fileID: 1380033315}
+  statusEffectBarController: {fileID: 1573103247}
   mapDrawer: {fileID: 47211515}
   fadeOutImage: {fileID: 720101584}
 --- !u!1 &1749796986 stripped

@@ -12,9 +12,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8cf7fb71d83d3604083d30dd86ea8f3a, type: 3}
   m_Name: Giant
   m_EditorClassIdentifier: 
-  maxHp: 28
+  maxHp: 2
   attack: 7
-  defense: 8
+  defense: 5
   speed: 4
   evasion: 4
   type: 0

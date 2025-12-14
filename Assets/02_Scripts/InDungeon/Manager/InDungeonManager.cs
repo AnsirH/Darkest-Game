@@ -33,16 +33,20 @@ namespace DarkestLike.InDungeon.Manager
         [SerializeField] MapSOData mapSOData;
 
         // Variables
+        private bool isTransitioning = false;
 
         // Properties
         /// <summary> Character Container Controller /// </summary>
         public PartyController PartyCtrl => partyCtrl;
         public UISubsystem UISubsystem => uiSubsystem;
+        public UnitSubsystem UnitSubsystem => unitSubsystem;
         public CameraSubsystem CameraSubsystem => cameraSubsystem;
+        public BattleSubsystem BattleSubsystem => battleSubsystem;
         public RoomData CurrentRoom => mapSubsystem.CurrentRoom;
         public TileData CurrentTile => mapSubsystem.CurrentTile;
         public CurrentLocation CurrentLocation => mapSubsystem.CurrentLocation;
         public Camera ViewCamera => cameraSubsystem.MainCamera;
+        public bool IsTransitioning => isTransitioning;
 
         // 던전 입장
         public void EnterDungeon(MapData mapData, List<CharacterData> characterDatas)
@@ -73,6 +77,7 @@ namespace DarkestLike.InDungeon.Manager
                         out CharacterUnit createdUnit))
                 {
                     uiSubsystem.CreateHpBar(createdUnit);
+                    uiSubsystem.CreateStatusEffectBar(createdUnit);
                 }
             }
         }
@@ -97,12 +102,16 @@ namespace DarkestLike.InDungeon.Manager
         // 페이드 이후 EnterRoom 이벤트 발행
         private IEnumerator EnterRoomCoroutine(RoomData roomData)
         {
+            isTransitioning = true;
+
             mapSubsystem.SetRoomData(roomData);
             partyCtrl.SetMovableLimit(5);
             cameraSubsystem.SetToRoomTarget();
 
             yield return StartCoroutine(uiSubsystem.FadeOutCoroutine(false, 1));
-            
+
+            isTransitioning = false;
+
             DungeonEventBus.Publish(DungeonEventType.EnterRoom);
             // 배틀 확인
             if (roomData.IsBattleTile)
@@ -120,25 +129,58 @@ namespace DarkestLike.InDungeon.Manager
         public void StartEnteringHallway(RoomData targetRoomData)
         {
             if (targetRoomData == null) return;
+
+            // 검증 1: 배틀 중 체크
+            if (battleSubsystem.IsBattleActive)
+            {
+                Debug.LogError("[InDungeonManager] Cannot transition during battle");
+                return;
+            }
+
+            // 검증 2: 이미 전환 중 체크
+            if (isTransitioning)
+            {
+                Debug.LogWarning("[InDungeonManager] Transition already in progress");
+                return;
+            }
+
+            // 검증 3: 현재 위치가 방인지 체크
+            if (CurrentLocation != CurrentLocation.Room)
+            {
+                Debug.LogError("[InDungeonManager] Can only enter hallway from a room");
+                return;
+            }
+
+            // 검증 4: 인접한 방인지 체크
+            if (!CurrentRoom.CheckIsMoveableRoom(targetRoomData))
+            {
+                Debug.LogError($"[InDungeonManager] Target room {targetRoomData.Position} is not adjacent");
+                return;
+            }
+
             StartCoroutine(EnterHallwayCoroutine(targetRoomData));
         }
 
         IEnumerator EnterHallwayCoroutine(RoomData targetRoomData)
         {
+            isTransitioning = true;
+
             yield return StartCoroutine(uiSubsystem.FadeOutCoroutine(true, 1));
 
             DungeonEventBus.Publish(DungeonEventType.Loading);
             mapSubsystem.SetHallwayData(mapSubsystem.CurrentRoom.GetExitHallway(targetRoomData));
             SetPlayerPositionToTarget();
-            
+
             float hallwayLength = mapSubsystem.CurrentHallway.Tiles.Length * mapSubsystem.TileLength;
             cameraSubsystem.SetCameraMovementLimit(hallwayLength);
             cameraSubsystem.SetToPartyTarget();
-            
+
             yield return new WaitForSeconds(0.5f);
-            
+
             yield return StartCoroutine(uiSubsystem.FadeOutCoroutine(false, 1));
-            
+
+            isTransitioning = false;
+
             DungeonEventBus.Publish(DungeonEventType.EnterHallway);
         }
 

@@ -9,7 +9,8 @@ namespace _02_Scripts.InDungeon.UI
         [SerializeField] BattleHud battleHud;
         [SerializeField] HpBarController hpBarController;
         [SerializeField] SelectedUnitBarController selectedUnitBarController;
-        
+        [SerializeField] StatusEffectBarController statusEffectBarController;
+
         public SelectedUnitBarController SelectedUnitBarController => selectedUnitBarController;
 
         public void CreateHpBar(CharacterUnit unit)
@@ -31,6 +32,30 @@ namespace _02_Scripts.InDungeon.UI
         public void RemoveHpBar(CharacterUnit unit)
         {
             hpBarController.RemoveHpBar(unit);
+        }
+
+        /// <summary>
+        /// 유닛의 상태 이상 바를 생성합니다.
+        /// </summary>
+        public void CreateStatusEffectBar(CharacterUnit unit)
+        {
+            statusEffectBarController.CreateStatusEffectBar(unit);
+        }
+
+        /// <summary>
+        /// 유닛의 상태 이상 바를 제거합니다.
+        /// </summary>
+        public void RemoveStatusEffectBar(CharacterUnit unit)
+        {
+            statusEffectBarController.RemoveStatusEffectBar(unit);
+        }
+
+        /// <summary>
+        /// 유닛의 상태 이상 아이콘을 즉시 갱신합니다.
+        /// </summary>
+        public void UpdateStatusEffectIcons(CharacterUnit unit)
+        {
+            statusEffectBarController.UpdateStatusEffectIcons(unit);
         }
 
         public void OnSelectPlayerUnit(CharacterUnit characterUnit, bool[] skillUsableFlags)

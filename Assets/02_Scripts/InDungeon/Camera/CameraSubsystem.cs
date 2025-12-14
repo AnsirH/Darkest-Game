@@ -24,18 +24,22 @@ namespace DarkestLike.InDungeon.CameraControl
 
         public void SetCameraMovementLimit(float limit) { camPositionMaintainer.SetLimitXPosition(limit); }
 
-        public void SetToRoomTarget()
+        public void SetToRoomTarget(bool isImmediate = true)
         {
             SetCameraTarget(roomCamTarget);
             camPositionMaintainer.isLimited = false;
-            camPositionMaintainer.SetPositionToTarget();
+            
+            if (isImmediate) 
+                camPositionMaintainer.SetPositionToTarget();
         }
 
-        public void SetToPartyTarget()
+        public void SetToPartyTarget(bool isImmediate = true)
         {
             SetCameraTarget(partyCamTarget);
             camPositionMaintainer.isLimited = true;
-            camPositionMaintainer.SetPositionToTarget();
+            
+            if (isImmediate) 
+                camPositionMaintainer.SetPositionToTarget();
         }
     }
 }

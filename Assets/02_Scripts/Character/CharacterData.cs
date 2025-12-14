@@ -17,6 +17,9 @@ namespace DarkestLike.Character
         // CharacterBase 참조 추가
         public CharacterBase Base { get; private set; }
 
+        // StatusEffectBar에서 접근 가능하도록 public getter 추가
+        public List<StatusEffect> ActiveEffects => activeEffects;
+
         public int MaxHealth => Stats.MaxHealth;
         public int Attack => Stats.TotalAttack;
         public int Defense => Stats.TotalDefense;

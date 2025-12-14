@@ -266,6 +266,13 @@ namespace DarkestLike.InDungeon.BattleSystem
                 return;
             }
 
+            // 적 유닛 수가 배치 가능한 위치보다 많으면 오류
+            if (enemyUnitsList.Count > enemyPositions.Length)
+            {
+                Debug.LogError($"[BattleSubsystem] 적 유닛 수({enemyUnitsList.Count})가 배치 가능한 위치({enemyPositions.Length})보다 많습니다!");
+                return;
+            }
+
             // 배틀 시작 시 선택 바 초기화 (이전 배틀 잔여물 제거)
             InDungeonManager.Inst.UISubsystem.SelectedUnitBarController.SetActiveSelectedBar(false);
 
@@ -282,6 +289,7 @@ namespace DarkestLike.InDungeon.BattleSystem
 
             // 배틀 지점 설정
             battleStage.position = stagePosition;
+            InDungeonManager.Inst.PartyCtrl.transform.position = battleStage.position - Vector3.right * 2.5f;
 
             // 플레이어 유닛의 positionMaintainer의 target을 플레이어 위치로 설정
             for (int i = 0; i < playerUnits.Count; i++)
@@ -362,37 +370,59 @@ namespace DarkestLike.InDungeon.BattleSystem
 
                 availableUnits.Remove(currentUnit);
 
-                // 3. 턴 시작 알림 (유닛 선택 - 기절 여부와 관계없이)
-                yield return StartCoroutine(OnTurnStart(currentUnit));
-
-                // DOT로 사망했으면 턴 스킵
-                if (!currentUnit.IsAlive)
+                // 3. 유닛 선택 (턴 시작 전 선택 UI 표시)
+                if (currentUnit.IsPlayerUnit)
                 {
-                    Debug.Log($"[BattleLoop] {currentUnit.CharacterName}이(가) DOT로 사망하여 턴 스킵");
-
-                    // 승패 확인
-                    if (CheckBattleEnd())
-                    {
-                        EndBattle();
-                        break;
-                    }
-
-                    continue;
+                    InDungeonManager.Inst.SelectPlayerUnit(currentUnit);
+                }
+                else
+                {
+                    InDungeonManager.Inst.SelectEnemyUnit(currentUnit);
                 }
 
-                // 4. 기절 체크
-                if (currentUnit.CharacterData.HasEffect(StatusEffectType.Stun))
+                Debug.Log($"[BattleSubsystem] {currentUnit.CharacterName}의 턴 시작");
+
+                // 4. 기절 체크 (ProcessStartOfTurn 호출 전에 체크)
+                bool isStunned = currentUnit.CharacterData.HasEffect(StatusEffectType.Stun);
+
+                // 5. DOT 효과 처리 (턴 시작 시 - 기절 여부와 무관하게 처리)
+                if (currentUnit.IsAlive)
+                {
+                    var results = currentUnit.CharacterData.ProcessStartOfTurn();
+                    foreach (var result in results)
+                    {
+                        Debug.Log($"[DOT] {currentUnit.CharacterName}이(가) {result.effect.effectName}(으)로 {result.damageDealt} 데미지를 받았습니다.");
+                        InDungeonManager.Inst.UISubsystem.UpdateHpBar(currentUnit);
+                    }
+
+                    // DOT로 사망 체크
+                    if (currentUnit.IsDead)
+                    {
+                        yield return StartCoroutine(HandleUnitDeath(currentUnit));
+
+                        // 승패 확인
+                        if (CheckBattleEnd())
+                        {
+                            EndBattle();
+                            break;
+                        }
+
+                        continue;
+                    }
+                }
+
+                // 6. 기절 상태면 행동 스킵
+                if (isStunned)
                 {
                     Debug.Log($"[BattleLoop] {currentUnit.CharacterName}이(가) 기절 상태로 행동 불가!");
-                    // TODO: 턴 스킵 이벤트 발행, 기절 UI 표시
                     yield return new WaitForSeconds(1f);
 
-                    // 기절해도 턴 종료 처리 (선택 해제)
+                    // 턴 종료 처리
                     OnTurnEnd(currentUnit);
                     continue;
                 }
 
-                // 5. 행동 실행 (플레이어 or AI)
+                // 7. 행동 실행 (플레이어 or AI)
                 if (currentUnit.IsPlayerUnit)
                 {
                     yield return StartCoroutine(PlayerTurnCoroutine(currentUnit));
@@ -402,10 +432,10 @@ namespace DarkestLike.InDungeon.BattleSystem
                     yield return StartCoroutine(EnemyTurnCoroutine(currentUnit));
                 }
 
-                // 6. 턴 종료 처리
+                // 8. 턴 종료 처리
                 OnTurnEnd(currentUnit);
 
-                // 7. 승패 확인
+                // 9. 승패 확인
                 if (CheckBattleEnd())
                 {
                     EndBattle();
@@ -461,43 +491,6 @@ namespace DarkestLike.InDungeon.BattleSystem
             // TODO: 라운드 종료 이벤트 발행
         }
 
-        /// <summary>
-        /// 턴 시작 알림 및 유닛 자동 선택
-        /// </summary>
-        private IEnumerator OnTurnStart(CharacterUnit unit)
-        {
-            Debug.Log($"[BattleSubsystem] {unit.CharacterName}의 턴 시작");
-
-            // DOT 효과 처리 (턴 시작 시)
-            if (unit.IsAlive)
-            {
-                var results = unit.CharacterData.ProcessStartOfTurn();
-                foreach (var result in results)
-                {
-                    Debug.Log($"[DOT] {unit.CharacterName}이(가) {result.effect.effectName}(으)로 {result.damageDealt} 데미지를 받았습니다.");
-                    InDungeonManager.Inst.UISubsystem.UpdateHpBar(unit);
-                }
-
-                // DOT로 사망 체크
-                if (unit.IsDead)
-                {
-                    yield return StartCoroutine(HandleUnitDeath(unit));
-                    yield break; // 사망했으므로 턴 시작 처리 중단
-                }
-            }
-
-            // 유닛 타입에 따라 자동 선택
-            if (unit.IsPlayerUnit)
-            {
-                InDungeonManager.Inst.SelectPlayerUnit(unit);
-            }
-            else
-            {
-                InDungeonManager.Inst.SelectEnemyUnit(unit);
-            }
-
-            // TODO: 턴 시작 이벤트 발행
-        }
 
         /// <summary>
         /// 턴 종료 처리 및 선택 해제
@@ -978,8 +971,9 @@ namespace DarkestLike.InDungeon.BattleSystem
             // 전체 유닛 리스트에서도 제거
             allUnits.Remove(unit);
 
-            // HP바 제거
+            // HP바 및 상태 이상 바 제거
             InDungeonManager.Inst.UISubsystem.RemoveHpBar(unit);
+            InDungeonManager.Inst.UISubsystem.RemoveStatusEffectBar(unit);
             InDungeonManager.Inst.UISubsystem.SelectedUnitBarController.ClearTargetableUnits();
 
             // 오브젝트 비활성화
@@ -1333,11 +1327,23 @@ namespace DarkestLike.InDungeon.BattleSystem
                 }
             }
 
-            // 카메라를 Room 타겟으로 복구
-            InDungeonManager.Inst.CameraSubsystem.SetToPartyTarget();
+            if (InDungeonManager.Inst.CurrentLocation == CurrentLocation.Hallway)
+                InDungeonManager.Inst.CameraSubsystem.SetToPartyTarget(false);
+            else
+                InDungeonManager.Inst.CameraSubsystem.SetToRoomTarget(false);
 
             // 배틀 클리어한 방/타일 데이터 초기화
             ClearBattleLocationData();
+
+            // 방에서 배틀이 끝났을 때 인접 방 하이라이트
+            if (InDungeonManager.Inst.CurrentLocation == CurrentLocation.Room)
+            {
+                var currentRoom = InDungeonManager.Inst.CurrentRoom;
+                if (currentRoom != null)
+                {
+                    InDungeonManager.Inst.UISubsystem.MapDrawer.HighlightNearRooms(currentRoom);
+                }
+            }
 
             // 탐험 모드로 복귀
             InDungeonManager.Inst.PartyCtrl.ActiveFreeze(false);
@@ -1396,6 +1402,16 @@ namespace DarkestLike.InDungeon.BattleSystem
             // 배틀 클리어한 방/타일 데이터 초기화
             ClearBattleLocationData();
 
+            // 방에서 배틀이 끝났을 때 인접 방 하이라이트
+            if (InDungeonManager.Inst.CurrentLocation == CurrentLocation.Room)
+            {
+                var currentRoom = InDungeonManager.Inst.CurrentRoom;
+                if (currentRoom != null)
+                {
+                    InDungeonManager.Inst.UISubsystem.MapDrawer.HighlightNearRooms(currentRoom);
+                }
+            }
+
             // 탐험 모드로 복귀
             InDungeonManager.Inst.PartyCtrl.ActiveFreeze(false);
 
@@ -1403,7 +1419,7 @@ namespace DarkestLike.InDungeon.BattleSystem
         }
 
         /// <summary>
-        /// 적 유닛 정리
+        /// 적 유닛 정리 (GameObject, UI, Dictionary 모두 정리)
         /// </summary>
         private void CleanupEnemyUnits()
         {
@@ -1411,14 +1427,24 @@ namespace DarkestLike.InDungeon.BattleSystem
             {
                 if (enemyUnit != null)
                 {
+                    // HP 바 및 상태 이상 바 제거
+                    InDungeonManager.Inst.UISubsystem.RemoveHpBar(enemyUnit);
+                    InDungeonManager.Inst.UISubsystem.RemoveStatusEffectBar(enemyUnit);
+
+                    // GameObject 제거
                     Destroy(enemyUnit.gameObject);
                 }
             }
             enemyUnits.Clear();
+
+            // UnitSubsystem의 적 캐릭터 Dictionary도 정리
+            InDungeonManager.Inst.UnitSubsystem.ClearEnemyCharacters();
+
+            Debug.Log("[BattleEnd] 적 유닛 정리 완료");
         }
 
         /// <summary>
-        /// 배틀 클리어한 방/타일의 데이터 초기화
+        /// 배틀 클리어한 방/타일의 데이터 초기화 및 맵 UI 업데이트
         /// </summary>
         private void ClearBattleLocationData()
         {
@@ -1432,6 +1458,9 @@ namespace DarkestLike.InDungeon.BattleSystem
                 {
                     currentRoom.ClearBattleData();
                     Debug.Log($"[BattleEnd] Room 데이터 초기화 완료: {currentRoom.Position}");
+
+                    // 맵 UI 업데이트 (빈 방으로 표시)
+                    InDungeonManager.Inst.UISubsystem.MapDrawer.UpdateRoomUI(currentRoom);
                 }
             }
             else if (currentLocation == CurrentLocation.Hallway)
@@ -1442,6 +1471,9 @@ namespace DarkestLike.InDungeon.BattleSystem
                 {
                     currentTile.ClearBattleData();
                     Debug.Log($"[BattleEnd] Tile 데이터 초기화 완료: {currentTile.Position}");
+
+                    // 맵 UI 업데이트 (빈 타일로 표시)
+                    InDungeonManager.Inst.UISubsystem.MapDrawer.UpdateTileUI(currentTile);
                 }
             }
         }

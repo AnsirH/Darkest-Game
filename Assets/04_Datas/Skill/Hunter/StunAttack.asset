@@ -24,8 +24,10 @@ MonoBehaviour:
   targetCount: 1
   canTargetFront: 1
   canTargetBack: 0
-  appliesStatusEffect: 0
+  appliesStatusEffect: 1
   statusEffectType: 2
   statusEffectDuration: 1
   statusEffectValue: 1
   statusEffectChance: 100
+  isHealing: 0
+  canTargetSelf: 0
