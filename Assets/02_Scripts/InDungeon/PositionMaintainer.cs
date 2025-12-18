@@ -24,7 +24,7 @@ namespace DarkestLike.InDungeon
 
         void LateUpdate()
         {
-            if (targetPoint is null) return;
+            if (!targetPoint) return;
             if (Mathf.Approximately(Mathf.Abs(Vector3.Distance(transform.position, targetPoint.position)), allowedDistance))
                 return;
             Vector3 resultPosition = Vector3.SmoothDamp(transform.position, targetPoint.position, ref currentSpeedVector, moveTime, maxSpeed);

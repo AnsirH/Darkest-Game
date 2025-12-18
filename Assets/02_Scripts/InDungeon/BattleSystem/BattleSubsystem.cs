@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using DarkestLike.InDungeon.Manager;
 using UnityEngine;
+using UnityEngine.Playables;
 
 namespace DarkestLike.InDungeon.BattleSystem
 {
@@ -36,7 +37,13 @@ namespace DarkestLike.InDungeon.BattleSystem
         [SerializeField] Transform battleStage;
         [SerializeField] Transform[] playerPositions;
         [SerializeField] Transform[] enemyPositions;
+        [SerializeField] Transform[] actionPlayerPositions;
+        [SerializeField] Transform[] actionEnemyPositions;
         [SerializeField] Transform battleCamTrf;
+
+        [Header("Animation")]
+        [SerializeField] private PlayableDirector skillDirector;
+        private bool isTimelinePlaying = false;
 
         // Variables
         // 배틀 상태
@@ -688,11 +695,17 @@ namespace DarkestLike.InDungeon.BattleSystem
                 yield break;
             }
 
-            // 3. 애니메이션 재생 (TODO: Timeline 통합)
+            // 3. 애니메이션 재생 (Timeline 통합)
             if (skill.timelineAsset != null)
             {
-                // yield return StartCoroutine(PlaySkillAnimation(caster, skill));
-                Debug.Log($"[Skill] 애니메이션 재생: {skill.description}");
+                List<CharacterUnit> targets = new List<CharacterUnit> { target };
+                yield return StartCoroutine(PlaySkillAnimation(caster, skill, targets));
+            }
+            else
+            {
+                // Fallback: TimelineAsset이 없으면 기본 대기 시간 사용
+                Debug.Log($"[Skill] TimelineAsset 없음, 기본 대기 시간 사용: {skill.description}");
+                yield return new WaitForSeconds(0.5f);
             }
 
             // 4. 지원 스킬 처리
@@ -808,11 +821,16 @@ namespace DarkestLike.InDungeon.BattleSystem
 
             Debug.Log($"[ExecuteSkillOnMultipleTargets] {caster.CharacterName}이(가) {targets.Count}명에게 {skill.description} 사용");
 
-            // 2. 애니메이션 재생
+            // 2. 애니메이션 재생 (Timeline 통합)
             if (skill.timelineAsset != null)
             {
-                // yield return StartCoroutine(PlaySkillAnimation(caster, skill));
-                Debug.Log($"[Skill] 애니메이션 재생: {skill.description}");
+                yield return StartCoroutine(PlaySkillAnimation(caster, skill, targets));
+            }
+            else
+            {
+                // Fallback: TimelineAsset이 없으면 기본 대기 시간 사용
+                Debug.Log($"[Skill] TimelineAsset 없음, 기본 대기 시간 사용: {skill.description}");
+                yield return new WaitForSeconds(0.5f);
             }
 
             // 3. 지원 스킬 처리 (회복/버프)
@@ -910,9 +928,9 @@ namespace DarkestLike.InDungeon.BattleSystem
             }
 
             // 5. 사망 처리 (일괄)
-            foreach (var deadUnit in deadUnits)
+            if (deadUnits.Count > 0)
             {
-                yield return StartCoroutine(HandleUnitDeath(deadUnit));
+                yield return StartCoroutine(HandleMultipleUnitDeaths(deadUnits));
             }
 
             yield return new WaitForSeconds(0.5f);
@@ -986,6 +1004,73 @@ namespace DarkestLike.InDungeon.BattleSystem
         }
 
         /// <summary>
+        /// 여러 유닛이 동시에 사망했을 때 일괄 처리합니다.
+        /// </summary>
+        private IEnumerator HandleMultipleUnitDeaths(List<CharacterUnit> deadUnits)
+        {
+            if (deadUnits == null || deadUnits.Count == 0)
+                yield break;
+
+            // 1. 모든 사망 로그 출력 (대기 없이)
+            foreach (var unit in deadUnits)
+            {
+                Debug.Log($"[Death] {unit.CharacterName}이(가) 사망했습니다.");
+            }
+
+            // 선택 바 비활성화
+            InDungeonManager.Inst.UISubsystem.SelectedUnitBarController.SetActiveSelectedBar(false);
+
+            // 2. 단 한 번의 1초 대기 (모든 유닛에 대해)
+            yield return new WaitForSeconds(1f);
+
+            // 3. 진영별로 사망 유닛 분류
+            List<CharacterUnit> deadPlayerUnits = new List<CharacterUnit>();
+            List<CharacterUnit> deadEnemyUnits = new List<CharacterUnit>();
+
+            foreach (var unit in deadUnits)
+            {
+                if (unit.IsPlayerUnit)
+                    deadPlayerUnits.Add(unit);
+                else
+                    deadEnemyUnits.Add(unit);
+            }
+
+            // 4. 모든 사망 유닛을 리스트에서 제거
+            foreach (var unit in deadUnits)
+            {
+                if (unit.IsPlayerUnit)
+                    playerUnits.Remove(unit);
+                else
+                    enemyUnits.Remove(unit);
+
+                allUnits.Remove(unit);
+
+                // UI 제거
+                InDungeonManager.Inst.UISubsystem.RemoveHpBar(unit);
+                InDungeonManager.Inst.UISubsystem.RemoveStatusEffectBar(unit);
+
+                // 오브젝트 비활성화
+                unit.gameObject.SetActive(false);
+            }
+
+            // 타겟 표시 정리 (한 번만)
+            InDungeonManager.Inst.UISubsystem.SelectedUnitBarController.ClearTargetableUnits();
+
+            // 5. 진영별로 유닛 재배치 (한 번만)
+            if (deadPlayerUnits.Count > 0)
+            {
+                PullUnitsForwardBatch(deadPlayerUnits, true);
+            }
+
+            if (deadEnemyUnits.Count > 0)
+            {
+                PullUnitsForwardBatch(deadEnemyUnits, false);
+            }
+
+            Debug.Log($"[Death] {deadUnits.Count}명 일괄 제거 완료, 재배치 완료");
+        }
+
+        /// <summary>
         /// 유닛 사망 시 뒤에 있는 유닛들을 앞으로 당깁니다.
         /// </summary>
         /// <param name="deadUnitIndex">죽은 유닛의 위치 인덱스</param>
@@ -1005,6 +1090,51 @@ namespace DarkestLike.InDungeon.BattleSystem
                     int newIndex = oldIndex - 1;
                     unit.SetPositionIndex(newIndex);
                     unit.SetTarget(positions[newIndex]); // 배틀 시작 시 설정한 속도 유지
+
+                    Debug.Log($"[Death] {unit.CharacterName} 위치 이동: {oldIndex} → {newIndex}");
+                }
+            }
+        }
+
+        /// <summary>
+        /// 여러 유닛이 동시에 사망했을 때 뒤의 유닛들을 올바른 최종 위치로 한 번에 이동시킵니다.
+        /// </summary>
+        /// <param name="deadUnits">사망한 유닛 리스트</param>
+        /// <param name="isPlayerUnit">플레이어 진영 여부</param>
+        private void PullUnitsForwardBatch(List<CharacterUnit> deadUnits, bool isPlayerUnit)
+        {
+            List<CharacterUnit> units = isPlayerUnit ? playerUnits : enemyUnits;
+            Transform[] positions = isPlayerUnit ? playerPositions : enemyPositions;
+
+            if (units.Count == 0)
+                return;
+
+            // 사망한 유닛들의 인덱스를 HashSet에 저장 (O(1) 조회)
+            HashSet<int> deadIndices = new HashSet<int>();
+            foreach (var deadUnit in deadUnits)
+            {
+                deadIndices.Add(deadUnit.PositionIndex);
+            }
+
+            // 각 생존 유닛에 대해 최종 위치 계산
+            foreach (var unit in units)
+            {
+                int oldIndex = unit.PositionIndex;
+
+                // 현재 유닛보다 앞에(인덱스가 작은) 사망한 유닛 개수 카운트
+                int deadCountBefore = 0;
+                foreach (int deadIndex in deadIndices)
+                {
+                    if (deadIndex < oldIndex)
+                        deadCountBefore++;
+                }
+
+                // 앞에 죽은 유닛 수만큼 앞으로 이동
+                if (deadCountBefore > 0)
+                {
+                    int newIndex = oldIndex - deadCountBefore;
+                    unit.SetPositionIndex(newIndex);
+                    unit.SetTarget(positions[newIndex]);
 
                     Debug.Log($"[Death] {unit.CharacterName} 위치 이동: {oldIndex} → {newIndex}");
                 }
@@ -1594,9 +1724,236 @@ namespace DarkestLike.InDungeon.BattleSystem
             }
         }
 
+        /// <summary>
+        /// 스킬 Timeline 애니메이션을 재생합니다.
+        /// </summary>
+        /// <param name="caster">스킬 시전자</param>
+        /// <param name="skill">실행할 스킬</param>
+        /// <param name="targets">타겟 유닛들</param>
+        private IEnumerator PlaySkillAnimation(CharacterUnit caster, SkillBase skill, List<CharacterUnit> targets)
+        {
+            if (skill.timelineAsset == null || skillDirector == null)
+            {
+                Debug.LogWarning($"[Timeline] {skill.description}의 TimelineAsset 또는 PlayableDirector가 없습니다.");
+                yield break;
+            }
+
+            Debug.Log($"[Timeline] {skill.description} 애니메이션 시작");
+
+            // 1. Timeline Asset 설정
+            skillDirector.playableAsset = skill.timelineAsset;
+
+            // 2. Track Binding 설정
+            BindTimelineTracks(caster, targets);
+
+            // 3. 액션 포지션으로 이동
+            yield return StartCoroutine(MoveUnitsToActionPosition(caster, targets, 0.1f));
+
+            // 4. Timeline 재생
+            isTimelinePlaying = true;
+            skillDirector.Play();
+
+            // 5. Timeline 완료 대기
+            while (isTimelinePlaying)
+            {
+                yield return null;
+            }
+
+            // 6. 원래 포지션으로 복귀
+            yield return StartCoroutine(ReturnUnitsToOriginalPosition(caster, targets, 0.1f));
+
+            Debug.Log($"[Timeline] {skill.description} 애니메이션 완료");
+        }
+
+        /// <summary>
+        /// Timeline 재생 전에 참가 유닛들을 액션 포지션으로 이동시킵니다.
+        /// </summary>
+        /// <param name="caster">시전자</param>
+        /// <param name="targets">타겟 목록</param>
+        /// <param name="moveTime">이동 시간</param>
+        private IEnumerator MoveUnitsToActionPosition(CharacterUnit caster, List<CharacterUnit> targets, float moveTime = 0.1f)
+        {
+            // 1. 입력 검증
+            if (caster == null)
+            {
+                Debug.LogWarning("[ActionPosition] Caster is null, skipping movement");
+                yield break;
+            }
+
+            // 2. 참가 유닛 수집 (caster + targets)
+            List<CharacterUnit> participatingUnits = new List<CharacterUnit> { caster };
+            if (targets != null)
+            {
+                participatingUnits.AddRange(targets);
+            }
+
+            // 3. 각 유닛을 액션 포지션으로 이동
+            foreach (var unit in participatingUnits)
+            {
+                if (unit == null || !unit.IsAlive) continue;
+
+                // 3-1. 진영에 따라 액션 포지션 배열 선택
+                Transform[] actionPositions = unit.IsPlayerUnit ? actionPlayerPositions : actionEnemyPositions;
+
+                // 3-2. 배열 검증
+                if (actionPositions == null || actionPositions.Length == 0)
+                {
+                    Debug.LogWarning($"[ActionPosition] Action positions not set for {(unit.IsPlayerUnit ? "Player" : "Enemy")} units");
+                    continue;
+                }
+
+                // 3-3. 인덱스 범위 검증
+                if (unit.PositionIndex >= actionPositions.Length)
+                {
+                    Debug.LogError($"[ActionPosition] {unit.CharacterName}'s PositionIndex ({unit.PositionIndex}) out of range");
+                    continue;
+                }
+
+                // 3-4. 액션 포지션으로 이동
+                unit.ChangePositionMaintainerTarget(actionPositions[unit.PositionIndex], moveTime);
+                Debug.Log($"[ActionPosition] {unit.CharacterName} moving to action position {unit.PositionIndex}");
+            }
+
+            // 4. 이동 완료 대기 (moveTime + 버퍼)
+            yield return new WaitForSeconds(moveTime + 0.1f);
+        }
+
+        /// <summary>
+        /// Timeline 재생 완료 후 참가 유닛들을 원래 포지션으로 복귀시킵니다.
+        /// </summary>
+        /// <param name="caster">시전자</param>
+        /// <param name="targets">타겟 목록</param>
+        /// <param name="moveTime">이동 시간</param>
+        private IEnumerator ReturnUnitsToOriginalPosition(CharacterUnit caster, List<CharacterUnit> targets, float moveTime = 0.1f)
+        {
+            // 1. 입력 검증
+            if (caster == null)
+            {
+                yield break; // 시전자가 죽었으면 조용히 종료
+            }
+
+            // 2. 참가 유닛 수집
+            List<CharacterUnit> participatingUnits = new List<CharacterUnit> { caster };
+            if (targets != null)
+            {
+                participatingUnits.AddRange(targets);
+            }
+
+            // 3. 각 유닛을 원래 포지션으로 복귀
+            foreach (var unit in participatingUnits)
+            {
+                // 3-1. 생존 유닛만 복귀 (액션 중 죽었을 수 있음)
+                if (unit == null || !unit.IsAlive)
+                {
+                    Debug.Log($"[ActionPosition] Skipping return for dead/null unit");
+                    continue;
+                }
+
+                // 3-2. 진영에 따라 일반 포지션 배열 선택
+                Transform[] regularPositions = unit.IsPlayerUnit ? playerPositions : enemyPositions;
+
+                // 3-3. 원래 포지션으로 복귀
+                unit.ChangePositionMaintainerTarget(regularPositions[unit.PositionIndex], moveTime);
+                Debug.Log($"[ActionPosition] {unit.CharacterName} returning to position {unit.PositionIndex}");
+            }
+
+            // 4. 복귀 완료 대기
+            yield return new WaitForSeconds(moveTime + 0.1f);
+        }
+
+        /// <summary>
+        /// Timeline 재생 완료 콜백
+        /// </summary>
+        private void OnTimelineStopped(PlayableDirector director)
+        {
+            if (director == skillDirector)
+            {
+                isTimelinePlaying = false;
+                Debug.Log("[Timeline] 재생 완료");
+            }
+        }
+
+        /// <summary>
+        /// Timeline의 Track들을 캐스터와 타겟 유닛에 바인딩합니다.
+        /// </summary>
+        private void BindTimelineTracks(CharacterUnit caster, List<CharacterUnit> targets)
+        {
+            if (skillDirector.playableAsset == null) return;
+
+            foreach (var output in skillDirector.playableAsset.outputs)
+            {
+                string trackName = output.streamName;
+
+                // 1. Caster Track: 시전자의 Animator 바인딩
+                if (trackName.Contains("Caster") && caster != null)
+                {
+                    if (caster.AnimController != null && caster.AnimController.anim != null)
+                    {
+                        skillDirector.SetGenericBinding(output.sourceObject, caster.AnimController.anim);
+                        Debug.Log($"[Timeline] Caster Track '{trackName}' → {caster.CharacterName}");
+                    }
+                }
+
+                // 2. Target Track: 첫 번째 타겟의 Animator 바인딩
+                else if (trackName.Contains("Target") && targets != null && targets.Count > 0)
+                {
+                    if (trackName == "Target" || trackName.Contains("Target1"))
+                    {
+                        var target = targets[0];
+                        if (target != null && target.AnimController != null && target.AnimController.anim != null)
+                        {
+                            skillDirector.SetGenericBinding(output.sourceObject, target.AnimController.anim);
+                            Debug.Log($"[Timeline] Target Track '{trackName}' → {target.CharacterName}");
+                        }
+                    }
+                    // Multi 타겟 스킬: Target2, Target3 처리
+                    else if (trackName.Contains("Target2") && targets.Count > 1)
+                    {
+                        var target = targets[1];
+                        if (target != null && target.AnimController != null && target.AnimController.anim != null)
+                        {
+                            skillDirector.SetGenericBinding(output.sourceObject, target.AnimController.anim);
+                            Debug.Log($"[Timeline] Target Track '{trackName}' → {target.CharacterName}");
+                        }
+                    }
+                    else if (trackName.Contains("Target3") && targets.Count > 2)
+                    {
+                        var target = targets[2];
+                        if (target != null && target.AnimController != null && target.AnimController.anim != null)
+                        {
+                            skillDirector.SetGenericBinding(output.sourceObject, target.AnimController.anim);
+                            Debug.Log($"[Timeline] Target Track '{trackName}' → {target.CharacterName}");
+                        }
+                    }
+                }
+            }
+        }
+
         protected override void OnInitialize()
         {
             mainCamera = Camera.main;
+
+            // PlayableDirector 초기화
+            if (skillDirector == null)
+            {
+                skillDirector = GetComponent<PlayableDirector>();
+                if (skillDirector == null)
+                {
+                    skillDirector = gameObject.AddComponent<PlayableDirector>();
+                    Debug.Log("[Timeline] PlayableDirector 컴포넌트 추가됨");
+                }
+            }
+
+            // 재생 완료 이벤트 구독
+            skillDirector.stopped += OnTimelineStopped;
+        }
+
+        private void OnDestroy()
+        {
+            if (skillDirector != null)
+            {
+                skillDirector.stopped -= OnTimelineStopped;
+            }
         }
     }
 }

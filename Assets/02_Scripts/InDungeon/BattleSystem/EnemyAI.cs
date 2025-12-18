@@ -87,16 +87,51 @@ namespace DarkestLike.InDungeon.BattleSystem
             // 우선순위 로직
             if (isSupportive)
             {
-                // 회복/버프: HP가 가장 낮은 유닛 우선
-                validTargets.Sort((a, b) => a.CharacterData.CurrentHealth.CompareTo(b.CharacterData.CurrentHealth));
+                // 회복/버프: HP 비율이 가장 낮은 유닛 우선 (현재 체력 / 최대 체력)
+                validTargets.Sort((a, b) =>
+                {
+                    float aPercent = (float)a.CharacterData.CurrentHealth / a.CharacterData.MaxHealth;
+                    float bPercent = (float)b.CharacterData.CurrentHealth / b.CharacterData.MaxHealth;
+                    return aPercent.CompareTo(bPercent);
+                });
+                return validTargets[0];
             }
             else
             {
-                // 공격: HP가 가장 낮은 유닛 우선 (마무리 타격)
-                validTargets.Sort((a, b) => a.CharacterData.CurrentHealth.CompareTo(b.CharacterData.CurrentHealth));
+                // 공격: 가중치 시스템 (체력 비율 70% + 랜덤 30%)
+                return SelectAttackTargetWithWeight(validTargets);
+            }
+        }
+
+        /// <summary>
+        /// 가중치 기반으로 공격 타겟을 선택합니다.
+        /// 체력 비율이 낮을수록 선택 확률이 높지만, 랜덤 요소로 예측 불가능성 추가.
+        /// </summary>
+        private static CharacterUnit SelectAttackTargetWithWeight(List<CharacterUnit> validTargets)
+        {
+            // 각 유닛의 점수 계산 (높을수록 우선순위 높음)
+            List<(CharacterUnit unit, float score)> scoredTargets = new List<(CharacterUnit, float)>();
+
+            foreach (var unit in validTargets)
+            {
+                float healthPercent = (float)unit.CharacterData.CurrentHealth / unit.CharacterData.MaxHealth;
+
+                // 체력 비율 점수: 체력이 낮을수록 높은 점수 (0.0 ~ 1.0)
+                float healthScore = 1f - healthPercent;
+
+                // 랜덤 점수 (0.0 ~ 1.0)
+                float randomScore = Random.Range(0f, 1f);
+
+                // 최종 점수: 체력 70% + 랜덤 30%
+                float finalScore = healthScore * 0.7f + randomScore * 0.3f;
+
+                scoredTargets.Add((unit, finalScore));
             }
 
-            return validTargets[0];
+            // 점수가 가장 높은 유닛 선택
+            scoredTargets.Sort((a, b) => b.score.CompareTo(a.score));
+
+            return scoredTargets[0].unit;
         }
 
         /// <summary>
