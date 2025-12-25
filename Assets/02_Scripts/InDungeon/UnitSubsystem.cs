@@ -18,8 +18,12 @@ namespace DarkestLike.InDungeon
         private Dictionary<CharacterData, CharacterUnit> playerCharacters = new();
         private Dictionary<CharacterData, CharacterUnit> enemyCharacters = new();
         // Properties
-        public List<CharacterUnit> PlayerUnits => playerCharacters.Values.ToList();
-        public List<CharacterUnit> EnemyUnits => enemyCharacters.Values.ToList();
+        public List<CharacterUnit> PlayerUnits => playerCharacters.Values
+            .OrderBy(unit => unit.PositionIndex)
+            .ToList();
+        public List<CharacterUnit> EnemyUnits => enemyCharacters.Values
+            .OrderBy(unit => unit.PositionIndex)
+            .ToList();
 
         protected override void OnInitialize()
         {
@@ -56,6 +60,22 @@ namespace DarkestLike.InDungeon
         public void ClearEnemyCharacters()
         {
             enemyCharacters.Clear();
+        }
+
+        /// <summary>
+        /// 플레이어 캐릭터를 제거합니다 (사망 시 호출)
+        /// </summary>
+        public void RemovePlayerUnit(CharacterUnit unit)
+        {
+            if (unit == null) return;
+
+            // Dictionary에서 해당 유닛 찾아서 제거
+            var entry = playerCharacters.FirstOrDefault(kvp => kvp.Value == unit);
+            if (entry.Key != null)
+            {
+                playerCharacters.Remove(entry.Key);
+                Debug.Log($"[UnitSubsystem] {unit.CharacterName} 제거됨. 남은 플레이어: {playerCharacters.Count}명");
+            }
         }
     }
 }

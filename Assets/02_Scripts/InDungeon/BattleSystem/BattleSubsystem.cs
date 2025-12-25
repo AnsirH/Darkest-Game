@@ -1,4 +1,3 @@
-using DarkestLike.Character;
 using DarkestLike.InDungeon.Unit;
 using DarkestLike.Map;
 using System.Collections;
@@ -7,6 +6,7 @@ using System.Linq;
 using DarkestLike.InDungeon.Manager;
 using UnityEngine;
 using UnityEngine.Playables;
+using _02_Scripts.InDungeon.UI;
 
 namespace DarkestLike.InDungeon.BattleSystem
 {
@@ -14,7 +14,7 @@ namespace DarkestLike.InDungeon.BattleSystem
     // 배틀 시작
     // 배틀 프로세스
     // 배틀 종료
-    public class BattleSubsystem : InDungeonSubsystem
+    public partial class BattleSubsystem : InDungeonSubsystem
     {
         enum BattleState
         {
@@ -45,9 +45,14 @@ namespace DarkestLike.InDungeon.BattleSystem
         [SerializeField] private PlayableDirector skillDirector;
         private bool isTimelinePlaying = false;
 
+        [Header("UI - Floating Text")]
+        [SerializeField] private FloatingTextController floatingText1; // 첫 번째 타겟
+        [SerializeField] private FloatingTextController floatingText2; // 두 번째 타겟
+        [SerializeField] private FloatingTextController floatingText3; // 세 번째 타겟
+        [SerializeField] private FloatingTextController floatingText4; // 네 번째 타겟
+
         // Variables
         // 배틀 상태
-        private readonly string characterUnitLayerName = "CharacterUnit";
         private bool isBattleActive = false;
         private BattleState battleState = BattleState.Start;
         private BattleEndType battleEndType;
@@ -64,7 +69,6 @@ namespace DarkestLike.InDungeon.BattleSystem
         public CharacterUnit SelectedPlayerUnit { get; private set; } = null;
         public SkillBase SelectedSkill { get; private set; } = null;
         private CharacterUnit currentHoveredUnit = null;
-        private Camera mainCamera;
 
         // Properties
         public bool IsBattleActive => isBattleActive;
@@ -90,165 +94,6 @@ namespace DarkestLike.InDungeon.BattleSystem
                 if (Input.GetMouseButtonDown(0) && battleState == BattleState.PlayerTurn)
                 {
                     HandleTargetClick();
-                }
-            }
-        }
-
-        /// <summary>
-        /// 마우스 위치의 캐릭터 유닛을 찾습니다.
-        /// </summary>
-        /// <param name="unit">찾은 유닛 (없으면 null)</param>
-        /// <returns>유닛을 찾았는지 여부</returns>
-        private bool TryGetCharacterUnitUnderMouse(out CharacterUnit unit)
-        {
-            unit = null;
-            RaycastHit hit;
-
-            if (!Physics.Raycast(InDungeonManager.Inst.ViewCamera.ScreenPointToRay(Input.mousePosition),
-                out hit, 500, LayerMask.GetMask(characterUnitLayerName)))
-            {
-                return false;
-            }
-
-            return hit.collider.TryGetComponent(out unit);
-        }
-
-        /// <summary>
-        /// 마우스 호버 시 적 유닛 감지 및 호버 바 표시 (적 유닛 전용)
-        /// </summary>
-        private void HandleUnitHover()
-        {
-            CharacterUnit hoveredUnit = null;
-
-            // 마우스 아래 유닛 감지
-            TryGetCharacterUnitUnderMouse(out hoveredUnit);
-
-            // 호버 상태 변경 확인 (최적화: 변경 시에만 UI 업데이트)
-            if (hoveredUnit != currentHoveredUnit)
-            {
-                // 이전 호버 해제
-                if (currentHoveredUnit != null)
-                {
-                    InDungeonManager.Inst.UISubsystem.SelectedUnitBarController.ClearHover();
-                }
-
-                // 새 유닛 호버 (적 유닛만)
-                if (hoveredUnit != null && hoveredUnit.IsAlive && hoveredUnit.IsEnemyUnit)
-                {
-                    InDungeonManager.Inst.UISubsystem.SelectedUnitBarController.HoverEnemyUnit(hoveredUnit.transform);
-                }
-
-                currentHoveredUnit = hoveredUnit;
-            }
-        }
-
-        /// <summary>
-        /// 유닛 클릭 처리 (배틀 전 - 플레이어 유닛 선택)
-        /// </summary>
-        private void HandleUnitClick()
-        {
-            if (!TryGetCharacterUnitUnderMouse(out CharacterUnit clickedUnit))
-                return;
-
-            if (!clickedUnit.IsEnemyUnit)
-            {
-                InDungeonManager.Inst.SelectPlayerUnit(clickedUnit);
-            }
-        }
-
-        /// <summary>
-        /// 배틀 중 타겟 클릭 처리 (적 또는 아군) - Multi 타겟 지원
-        /// </summary>
-        private void HandleTargetClick()
-        {
-            if (!TryGetCharacterUnitUnderMouse(out CharacterUnit clickedUnit))
-                return;
-
-            if (!clickedUnit.IsAlive || SelectedSkill == null)
-                return;
-
-            // 지원 스킬 → 아군 타겟팅
-            if (IsSupportiveSkill(SelectedSkill))
-            {
-                if (!clickedUnit.IsPlayerUnit)
-                {
-                    Debug.Log($"[BattleSubsystem] 지원 스킬은 아군만 타겟할 수 있습니다.");
-                    return;
-                }
-
-                // Multi 타겟 스킬
-                if (IsMultiTargetSkill(SelectedSkill))
-                {
-                    // 클릭한 아군의 영역 검증
-                    if (!ValidateAllyTarget(clickedUnit, SelectedSkill, SelectedPlayerUnit))
-                    {
-                        Debug.Log($"[BattleSubsystem] {clickedUnit.CharacterName}이(가) 속한 영역을 타겟할 수 없습니다.");
-                        return;
-                    }
-
-                    // 영역 내 모든 아군 선택
-                    List<CharacterUnit> targetedAllies = GetTargetedUnitsInArea(clickedUnit, SelectedSkill, false);
-
-                    if (targetedAllies.Count > 0)
-                    {
-                        // 다중 아군 선택 (첫 번째 유닛을 대표로 설정)
-                        SelectedAllyUnit = targetedAllies[0];
-                        Debug.Log($"[BattleSubsystem] 아군 영역 선택: {targetedAllies.Count}명");
-                    }
-                }
-                // Single 타겟 스킬 (기존 로직)
-                else
-                {
-                    if (ValidateAllyTarget(clickedUnit, SelectedSkill, SelectedPlayerUnit))
-                    {
-                        SelectAlly(clickedUnit);
-                    }
-                    else
-                    {
-                        Debug.Log($"[BattleSubsystem] {clickedUnit.CharacterName}은(는) 타겟할 수 없습니다.");
-                    }
-                }
-            }
-            // 공격 스킬 → 적 타겟팅
-            else
-            {
-                if (!clickedUnit.IsEnemyUnit)
-                {
-                    Debug.Log($"[BattleSubsystem] 공격 스킬은 적만 타겟할 수 있습니다.");
-                    return;
-                }
-
-                // Multi 타겟 스킬
-                if (IsMultiTargetSkill(SelectedSkill))
-                {
-                    // 클릭한 적의 영역 검증
-                    if (!ValidateTarget(clickedUnit, SelectedSkill))
-                    {
-                        Debug.Log($"[BattleSubsystem] {clickedUnit.CharacterName}이(가) 속한 영역을 공격할 수 없습니다.");
-                        return;
-                    }
-
-                    // 영역 내 모든 적 선택
-                    List<CharacterUnit> targetedEnemies = GetTargetedUnitsInArea(clickedUnit, SelectedSkill, true);
-
-                    if (targetedEnemies.Count > 0)
-                    {
-                        // 다중 적 선택 (첫 번째 유닛을 대표로 설정)
-                        InDungeonManager.Inst.SelectEnemyUnit(targetedEnemies[0]);
-                        Debug.Log($"[BattleSubsystem] 적 영역 선택: {targetedEnemies.Count}명");
-                    }
-                }
-                // Single 타겟 스킬 (기존 로직)
-                else
-                {
-                    if (ValidateTarget(clickedUnit, SelectedSkill))
-                    {
-                        InDungeonManager.Inst.SelectEnemyUnit(clickedUnit);
-                    }
-                    else
-                    {
-                        Debug.Log($"[BattleSubsystem] {clickedUnit.CharacterName}은(는) 공격할 수 없습니다.");
-                    }
                 }
             }
         }
@@ -498,7 +343,6 @@ namespace DarkestLike.InDungeon.BattleSystem
             // TODO: 라운드 종료 이벤트 발행
         }
 
-
         /// <summary>
         /// 턴 종료 처리 및 선택 해제
         /// </summary>
@@ -671,293 +515,6 @@ namespace DarkestLike.InDungeon.BattleSystem
         }
 
         /// <summary>
-        /// 스킬 실행
-        /// </summary>
-        private IEnumerator ExecuteSkill(CharacterUnit caster, SkillBase skill, CharacterUnit target)
-        {
-            battleState = BattleState.Action;
-
-            // 1. 포지션 검증
-            if (!ValidateSkillPosition(caster, skill))
-            {
-                Debug.LogWarning($"[ExecuteSkill] {caster.CharacterName}의 포지션에서 {skill.description}를 사용할 수 없습니다.");
-                yield break;
-            }
-
-            // 2. 타겟 검증 (지원 스킬이면 아군 검증)
-            bool isValidTarget = IsSupportiveSkill(skill)
-                ? ValidateAllyTarget(target, skill, caster)
-                : ValidateTarget(target, skill);
-
-            if (!isValidTarget)
-            {
-                Debug.LogWarning($"[ExecuteSkill] {target.CharacterName}은(는) 유효한 타겟이 아닙니다.");
-                yield break;
-            }
-
-            // 3. 애니메이션 재생 (Timeline 통합)
-            if (skill.timelineAsset != null)
-            {
-                List<CharacterUnit> targets = new List<CharacterUnit> { target };
-                yield return StartCoroutine(PlaySkillAnimation(caster, skill, targets));
-            }
-            else
-            {
-                // Fallback: TimelineAsset이 없으면 기본 대기 시간 사용
-                Debug.Log($"[Skill] TimelineAsset 없음, 기본 대기 시간 사용: {skill.description}");
-                yield return new WaitForSeconds(0.5f);
-            }
-
-            // 4. 지원 스킬 처리
-            if (IsSupportiveSkill(skill))
-            {
-                // 4a. 힐링 처리 (attackRatio 사용)
-                if (skill.isHealing)
-                {
-                    // attackRatio를 사용하여 회복량 계산 (데미지와 동일한 방식)
-                    int healAmount = (int)(caster.CharacterData.Attack * (skill.attackRatio / 100f));
-                    int healedAmount = target.CharacterData.Heal(healAmount);
-
-                    Debug.Log($"[Heal] {caster.CharacterName}이(가) {target.CharacterName}을(를) {healedAmount} 회복!");
-                    Debug.Log($"[Heal] {target.CharacterName} HP: {target.CharacterData.CurrentHealth}/{target.CharacterData.MaxHealth}");
-
-                    // HP바 업데이트
-                    InDungeonManager.Inst.UISubsystem.UpdateHpBar(target);
-                    // TODO: 회복 숫자 표시 이벤트 (초록색)
-                }
-
-                // 4b. 버프 적용
-                if (skill.appliesStatusEffect && skill.statusEffectType == StatusEffectType.Buff)
-                {
-                    int roll = Random.Range(0, 100);
-                    if (roll < skill.statusEffectChance)
-                    {
-                        var effect = new StatusEffect(
-                            skill.statusEffectType,
-                            skill.statusEffectDuration,
-                            skill.statusEffectValue,
-                            skill.description
-                        );
-                        target.CharacterData.AddStatusEffect(effect);
-
-                        Debug.Log($"[Buff] {target.CharacterName}에게 {effect.type} 효과 적용!");
-                        // TODO: 버프 적용 이벤트
-                    }
-                }
-
-                yield return new WaitForSeconds(0.5f);
-                yield break;
-            }
-
-            // 5. 공격 스킬 처리 (기존 로직)
-            DamageResult result = DamageCalculator.CalculateDamage(caster, target, skill);
-
-            if (result.isMiss)
-            {
-                Debug.Log($"[Combat] {caster.CharacterName}의 공격이 빗나갔습니다!");
-                // TODO: Miss UI 표시 이벤트
-            }
-            else
-            {
-                // 데미지 적용
-                target.TakeDamage(result.damage);
-
-                Debug.Log($"[Combat] {caster.CharacterName}이(가) {target.CharacterName}에게 {result.damage} 데미지!");
-                Debug.Log($"[Combat] {target.CharacterName} HP: {target.CharacterData.CurrentHealth}/{target.CharacterData.MaxHealth}");
-
-                // HP바 업데이트
-                InDungeonManager.Inst.UISubsystem.UpdateHpBar(target);
-
-                // TODO: 데미지 숫자 표시 이벤트
-
-                // 상태이상 적용
-                if (skill.appliesStatusEffect)
-                {
-                    int roll = Random.Range(0, 100);
-                    if (roll < skill.statusEffectChance)
-                    {
-                        var effect = new StatusEffect(
-                            skill.statusEffectType,
-                            skill.statusEffectDuration,
-                            skill.statusEffectValue,
-                            skill.description
-                        );
-                        target.CharacterData.AddStatusEffect(effect);
-
-                        Debug.Log($"[StatusEffect] {target.CharacterName}에게 {effect.type} 효과 적용!");
-                        // TODO: 상태이상 적용 이벤트
-                    }
-                }
-
-                // 사망 체크
-                if (target.IsDead)
-                {
-                    yield return StartCoroutine(HandleUnitDeath(target));
-                }
-            }
-
-            yield return new WaitForSeconds(0.5f);
-        }
-
-        /// <summary>
-        /// 다중 타겟에게 스킬 실행 (Multi 타겟용)
-        /// </summary>
-        private IEnumerator ExecuteSkillOnMultipleTargets(CharacterUnit caster, SkillBase skill, List<CharacterUnit> targets)
-        {
-            battleState = BattleState.Action;
-
-            // 1. 포지션 검증
-            if (!ValidateSkillPosition(caster, skill))
-            {
-                Debug.LogWarning($"[ExecuteSkill] {caster.CharacterName}의 포지션에서 {skill.description}를 사용할 수 없습니다.");
-                yield break;
-            }
-
-            if (targets == null || targets.Count == 0)
-            {
-                Debug.LogWarning($"[ExecuteSkillOnMultipleTargets] 타겟이 없습니다.");
-                yield break;
-            }
-
-            Debug.Log($"[ExecuteSkillOnMultipleTargets] {caster.CharacterName}이(가) {targets.Count}명에게 {skill.description} 사용");
-
-            // 2. 애니메이션 재생 (Timeline 통합)
-            if (skill.timelineAsset != null)
-            {
-                yield return StartCoroutine(PlaySkillAnimation(caster, skill, targets));
-            }
-            else
-            {
-                // Fallback: TimelineAsset이 없으면 기본 대기 시간 사용
-                Debug.Log($"[Skill] TimelineAsset 없음, 기본 대기 시간 사용: {skill.description}");
-                yield return new WaitForSeconds(0.5f);
-            }
-
-            // 3. 지원 스킬 처리 (회복/버프)
-            if (IsSupportiveSkill(skill))
-            {
-                foreach (var target in targets)
-                {
-                    if (target == null || !target.IsAlive) continue;
-
-                    // 힐링 처리
-                    if (skill.isHealing)
-                    {
-                        int healAmount = (int)(caster.CharacterData.Attack * (skill.attackRatio / 100f));
-                        int healedAmount = target.CharacterData.Heal(healAmount);
-
-                        Debug.Log($"[Heal] {caster.CharacterName}이(가) {target.CharacterName}을(를) {healedAmount} 회복!");
-                        Debug.Log($"[Heal] {target.CharacterName} HP: {target.CharacterData.CurrentHealth}/{target.CharacterData.MaxHealth}");
-
-                        // HP바 업데이트 (동시 적용)
-                        InDungeonManager.Inst.UISubsystem.UpdateHpBar(target);
-                    }
-
-                    // 버프 적용
-                    if (skill.appliesStatusEffect && skill.statusEffectType == StatusEffectType.Buff)
-                    {
-                        int roll = Random.Range(0, 100);
-                        if (roll < skill.statusEffectChance)
-                        {
-                            var effect = new StatusEffect(
-                                skill.statusEffectType,
-                                skill.statusEffectDuration,
-                                skill.statusEffectValue,
-                                skill.description
-                            );
-                            target.CharacterData.AddStatusEffect(effect);
-
-                            Debug.Log($"[Buff] {target.CharacterName}에게 {effect.type} 효과 적용!");
-                        }
-                    }
-                }
-
-                yield return new WaitForSeconds(0.5f);
-                yield break;
-            }
-
-            // 4. 공격 스킬 처리 (모든 타겟에 동시 적용)
-            List<CharacterUnit> deadUnits = new List<CharacterUnit>();
-
-            foreach (var target in targets)
-            {
-                if (target == null || !target.IsAlive) continue;
-
-                // 데미지 계산 및 적용
-                DamageResult result = DamageCalculator.CalculateDamage(caster, target, skill);
-
-                if (result.isMiss)
-                {
-                    Debug.Log($"[Combat] {caster.CharacterName}의 {target.CharacterName}에 대한 공격이 빗나갔습니다!");
-                }
-                else
-                {
-                    // 데미지 적용
-                    target.TakeDamage(result.damage);
-
-                    Debug.Log($"[Combat] {caster.CharacterName}이(가) {target.CharacterName}에게 {result.damage} 데미지!");
-                    Debug.Log($"[Combat] {target.CharacterName} HP: {target.CharacterData.CurrentHealth}/{target.CharacterData.MaxHealth}");
-
-                    // HP바 업데이트 (동시 적용)
-                    InDungeonManager.Inst.UISubsystem.UpdateHpBar(target);
-
-                    // 상태이상 적용
-                    if (skill.appliesStatusEffect)
-                    {
-                        int roll = Random.Range(0, 100);
-                        if (roll < skill.statusEffectChance)
-                        {
-                            var effect = new StatusEffect(
-                                skill.statusEffectType,
-                                skill.statusEffectDuration,
-                                skill.statusEffectValue,
-                                skill.description
-                            );
-                            target.CharacterData.AddStatusEffect(effect);
-
-                            Debug.Log($"[StatusEffect] {target.CharacterName}에게 {effect.type} 효과 적용!");
-                        }
-                    }
-
-                    // 사망 체크 (나중에 일괄 처리)
-                    if (target.IsDead && !deadUnits.Contains(target))
-                    {
-                        deadUnits.Add(target);
-                    }
-                }
-            }
-
-            // 5. 사망 처리 (일괄)
-            if (deadUnits.Count > 0)
-            {
-                yield return StartCoroutine(HandleMultipleUnitDeaths(deadUnits));
-            }
-
-            yield return new WaitForSeconds(0.5f);
-        }
-
-        /// <summary>
-        /// 스킬 포지션 검증 (UI에서도 접근 가능하도록 public)
-        /// </summary>
-        public bool ValidateSkillPosition(CharacterUnit caster, SkillBase skill)
-        {
-            if (caster.Position == UnitPosition.Front && !skill.canUseFromFront) return false;
-            if (caster.Position == UnitPosition.Back && !skill.canUseFromBack) return false;
-            return true;
-        }
-
-        /// <summary>
-        /// 타겟 검증
-        /// </summary>
-        private bool ValidateTarget(CharacterUnit target, SkillBase skill)
-        {
-            if (!target.IsAlive) return false;
-            if (target.Position == UnitPosition.Front && !skill.canTargetFront) return false;
-            if (target.Position == UnitPosition.Back && !skill.canTargetBack) return false;
-            return true;
-        }
-
-        /// <summary>
         /// 유닛 사망 처리
         /// </summary>
         private IEnumerator HandleUnitDeath(CharacterUnit unit)
@@ -993,6 +550,12 @@ namespace DarkestLike.InDungeon.BattleSystem
             InDungeonManager.Inst.UISubsystem.RemoveHpBar(unit);
             InDungeonManager.Inst.UISubsystem.RemoveStatusEffectBar(unit);
             InDungeonManager.Inst.UISubsystem.SelectedUnitBarController.ClearTargetableUnits();
+
+            // UnitSubsystem에서 플레이어 유닛 제거 (영구 제거)
+            if (isPlayer)
+            {
+                InDungeonManager.Inst.UnitSubsystem.RemovePlayerUnit(unit);
+            }
 
             // 오브젝트 비활성화
             unit.gameObject.SetActive(false);
@@ -1048,6 +611,12 @@ namespace DarkestLike.InDungeon.BattleSystem
                 // UI 제거
                 InDungeonManager.Inst.UISubsystem.RemoveHpBar(unit);
                 InDungeonManager.Inst.UISubsystem.RemoveStatusEffectBar(unit);
+
+                // UnitSubsystem에서 플레이어 유닛 제거 (영구 제거)
+                if (unit.IsPlayerUnit)
+                {
+                    InDungeonManager.Inst.UnitSubsystem.RemovePlayerUnit(unit);
+                }
 
                 // 오브젝트 비활성화
                 unit.gameObject.SetActive(false);
@@ -1165,33 +734,25 @@ namespace DarkestLike.InDungeon.BattleSystem
             return false;
         }
 
-        public void SetSelectedSkill(SkillBase skill)
+        /// <summary>
+        /// 스킬 포지션 검증 (UI에서도 접근 가능하도록 public)
+        /// </summary>
+        public bool ValidateSkillPosition(CharacterUnit caster, SkillBase skill)
         {
-            SelectedSkill = skill;
+            if (caster.Position == UnitPosition.Front && !skill.canUseFromFront) return false;
+            if (caster.Position == UnitPosition.Back && !skill.canUseFromBack) return false;
+            return true;
+        }
 
-            // 스킬 선택 시 타겟 가능한 유닛 표시
-            if (skill != null && isBattleActive && battleState == BattleState.PlayerTurn)
-            {
-                bool isSupportive = IsSupportiveSkill(skill);
-                var targetableUnits = isSupportive
-                    ? GetTargetableAllies(skill, SelectedPlayerUnit)
-                    : GetTargetableEnemies(skill);
-
-                if (IsMultiTargetSkill(skill))
-                {
-                    InDungeonManager.Inst.UISubsystem.SelectedUnitBarController.ShowConnectionIndicators(
-                        targetableUnits,
-                        skill.canTargetFront,
-                        skill.canTargetBack,
-                        isSupportive);
-                }
-                else
-                {
-                    InDungeonManager.Inst.UISubsystem.SelectedUnitBarController.ShowTargetableUnits(
-                        targetableUnits,
-                        isSupportive);
-                }
-            }
+        /// <summary>
+        /// 타겟 검증
+        /// </summary>
+        private bool ValidateTarget(CharacterUnit target, SkillBase skill)
+        {
+            if (!target.IsAlive) return false;
+            if (target.Position == UnitPosition.Front && !skill.canTargetFront) return false;
+            if (target.Position == UnitPosition.Back && !skill.canTargetBack) return false;
+            return true;
         }
 
         /// <summary>
@@ -1219,25 +780,6 @@ namespace DarkestLike.InDungeon.BattleSystem
             }
 
             return targetable;
-        }
-
-        /// <summary>
-        /// 스킬이 아군 대상 지원 스킬인지 확인
-        /// </summary>
-        private bool IsSupportiveSkill(SkillBase skill)
-        {
-            if (skill == null) return false;
-            return skill.isHealing ||
-                   (skill.appliesStatusEffect && skill.statusEffectType == StatusEffectType.Buff);
-        }
-
-        /// <summary>
-        /// 스킬이 Multi 타겟 스킬인지 확인
-        /// </summary>
-        private bool IsMultiTargetSkill(SkillBase skill)
-        {
-            if (skill == null) return false;
-            return skill.targetType == TargetType.Multi;
         }
 
         /// <summary>
@@ -1724,215 +1266,8 @@ namespace DarkestLike.InDungeon.BattleSystem
             }
         }
 
-        /// <summary>
-        /// 스킬 Timeline 애니메이션을 재생합니다.
-        /// </summary>
-        /// <param name="caster">스킬 시전자</param>
-        /// <param name="skill">실행할 스킬</param>
-        /// <param name="targets">타겟 유닛들</param>
-        private IEnumerator PlaySkillAnimation(CharacterUnit caster, SkillBase skill, List<CharacterUnit> targets)
-        {
-            if (skill.timelineAsset == null || skillDirector == null)
-            {
-                Debug.LogWarning($"[Timeline] {skill.description}의 TimelineAsset 또는 PlayableDirector가 없습니다.");
-                yield break;
-            }
-
-            Debug.Log($"[Timeline] {skill.description} 애니메이션 시작");
-
-            // 1. Timeline Asset 설정
-            skillDirector.playableAsset = skill.timelineAsset;
-
-            // 2. Track Binding 설정
-            BindTimelineTracks(caster, targets);
-
-            // 3. 액션 포지션으로 이동
-            yield return StartCoroutine(MoveUnitsToActionPosition(caster, targets, 0.1f));
-
-            // 4. Timeline 재생
-            isTimelinePlaying = true;
-            skillDirector.Play();
-
-            // 5. Timeline 완료 대기
-            while (isTimelinePlaying)
-            {
-                yield return null;
-            }
-
-            // 6. 원래 포지션으로 복귀
-            yield return StartCoroutine(ReturnUnitsToOriginalPosition(caster, targets, 0.1f));
-
-            Debug.Log($"[Timeline] {skill.description} 애니메이션 완료");
-        }
-
-        /// <summary>
-        /// Timeline 재생 전에 참가 유닛들을 액션 포지션으로 이동시킵니다.
-        /// </summary>
-        /// <param name="caster">시전자</param>
-        /// <param name="targets">타겟 목록</param>
-        /// <param name="moveTime">이동 시간</param>
-        private IEnumerator MoveUnitsToActionPosition(CharacterUnit caster, List<CharacterUnit> targets, float moveTime = 0.1f)
-        {
-            // 1. 입력 검증
-            if (caster == null)
-            {
-                Debug.LogWarning("[ActionPosition] Caster is null, skipping movement");
-                yield break;
-            }
-
-            // 2. 참가 유닛 수집 (caster + targets)
-            List<CharacterUnit> participatingUnits = new List<CharacterUnit> { caster };
-            if (targets != null)
-            {
-                participatingUnits.AddRange(targets);
-            }
-
-            // 3. 각 유닛을 액션 포지션으로 이동
-            foreach (var unit in participatingUnits)
-            {
-                if (unit == null || !unit.IsAlive) continue;
-
-                // 3-1. 진영에 따라 액션 포지션 배열 선택
-                Transform[] actionPositions = unit.IsPlayerUnit ? actionPlayerPositions : actionEnemyPositions;
-
-                // 3-2. 배열 검증
-                if (actionPositions == null || actionPositions.Length == 0)
-                {
-                    Debug.LogWarning($"[ActionPosition] Action positions not set for {(unit.IsPlayerUnit ? "Player" : "Enemy")} units");
-                    continue;
-                }
-
-                // 3-3. 인덱스 범위 검증
-                if (unit.PositionIndex >= actionPositions.Length)
-                {
-                    Debug.LogError($"[ActionPosition] {unit.CharacterName}'s PositionIndex ({unit.PositionIndex}) out of range");
-                    continue;
-                }
-
-                // 3-4. 액션 포지션으로 이동
-                unit.ChangePositionMaintainerTarget(actionPositions[unit.PositionIndex], moveTime);
-                Debug.Log($"[ActionPosition] {unit.CharacterName} moving to action position {unit.PositionIndex}");
-            }
-
-            // 4. 이동 완료 대기 (moveTime + 버퍼)
-            yield return new WaitForSeconds(moveTime + 0.1f);
-        }
-
-        /// <summary>
-        /// Timeline 재생 완료 후 참가 유닛들을 원래 포지션으로 복귀시킵니다.
-        /// </summary>
-        /// <param name="caster">시전자</param>
-        /// <param name="targets">타겟 목록</param>
-        /// <param name="moveTime">이동 시간</param>
-        private IEnumerator ReturnUnitsToOriginalPosition(CharacterUnit caster, List<CharacterUnit> targets, float moveTime = 0.1f)
-        {
-            // 1. 입력 검증
-            if (caster == null)
-            {
-                yield break; // 시전자가 죽었으면 조용히 종료
-            }
-
-            // 2. 참가 유닛 수집
-            List<CharacterUnit> participatingUnits = new List<CharacterUnit> { caster };
-            if (targets != null)
-            {
-                participatingUnits.AddRange(targets);
-            }
-
-            // 3. 각 유닛을 원래 포지션으로 복귀
-            foreach (var unit in participatingUnits)
-            {
-                // 3-1. 생존 유닛만 복귀 (액션 중 죽었을 수 있음)
-                if (unit == null || !unit.IsAlive)
-                {
-                    Debug.Log($"[ActionPosition] Skipping return for dead/null unit");
-                    continue;
-                }
-
-                // 3-2. 진영에 따라 일반 포지션 배열 선택
-                Transform[] regularPositions = unit.IsPlayerUnit ? playerPositions : enemyPositions;
-
-                // 3-3. 원래 포지션으로 복귀
-                unit.ChangePositionMaintainerTarget(regularPositions[unit.PositionIndex], moveTime);
-                Debug.Log($"[ActionPosition] {unit.CharacterName} returning to position {unit.PositionIndex}");
-            }
-
-            // 4. 복귀 완료 대기
-            yield return new WaitForSeconds(moveTime + 0.1f);
-        }
-
-        /// <summary>
-        /// Timeline 재생 완료 콜백
-        /// </summary>
-        private void OnTimelineStopped(PlayableDirector director)
-        {
-            if (director == skillDirector)
-            {
-                isTimelinePlaying = false;
-                Debug.Log("[Timeline] 재생 완료");
-            }
-        }
-
-        /// <summary>
-        /// Timeline의 Track들을 캐스터와 타겟 유닛에 바인딩합니다.
-        /// </summary>
-        private void BindTimelineTracks(CharacterUnit caster, List<CharacterUnit> targets)
-        {
-            if (skillDirector.playableAsset == null) return;
-
-            foreach (var output in skillDirector.playableAsset.outputs)
-            {
-                string trackName = output.streamName;
-
-                // 1. Caster Track: 시전자의 Animator 바인딩
-                if (trackName.Contains("Caster") && caster != null)
-                {
-                    if (caster.AnimController != null && caster.AnimController.anim != null)
-                    {
-                        skillDirector.SetGenericBinding(output.sourceObject, caster.AnimController.anim);
-                        Debug.Log($"[Timeline] Caster Track '{trackName}' → {caster.CharacterName}");
-                    }
-                }
-
-                // 2. Target Track: 첫 번째 타겟의 Animator 바인딩
-                else if (trackName.Contains("Target") && targets != null && targets.Count > 0)
-                {
-                    if (trackName == "Target" || trackName.Contains("Target1"))
-                    {
-                        var target = targets[0];
-                        if (target != null && target.AnimController != null && target.AnimController.anim != null)
-                        {
-                            skillDirector.SetGenericBinding(output.sourceObject, target.AnimController.anim);
-                            Debug.Log($"[Timeline] Target Track '{trackName}' → {target.CharacterName}");
-                        }
-                    }
-                    // Multi 타겟 스킬: Target2, Target3 처리
-                    else if (trackName.Contains("Target2") && targets.Count > 1)
-                    {
-                        var target = targets[1];
-                        if (target != null && target.AnimController != null && target.AnimController.anim != null)
-                        {
-                            skillDirector.SetGenericBinding(output.sourceObject, target.AnimController.anim);
-                            Debug.Log($"[Timeline] Target Track '{trackName}' → {target.CharacterName}");
-                        }
-                    }
-                    else if (trackName.Contains("Target3") && targets.Count > 2)
-                    {
-                        var target = targets[2];
-                        if (target != null && target.AnimController != null && target.AnimController.anim != null)
-                        {
-                            skillDirector.SetGenericBinding(output.sourceObject, target.AnimController.anim);
-                            Debug.Log($"[Timeline] Target Track '{trackName}' → {target.CharacterName}");
-                        }
-                    }
-                }
-            }
-        }
-
         protected override void OnInitialize()
         {
-            mainCamera = Camera.main;
-
             // PlayableDirector 초기화
             if (skillDirector == null)
             {

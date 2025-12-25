@@ -64,5 +64,32 @@ namespace _02_Scripts.InDungeon.UI
                 statusEffectBars[targetUnit].UpdateIcons();
             }
         }
+
+        /// <summary>
+        /// 특정 유닛의 상태 이상 바를 활성화/비활성화합니다.
+        /// </summary>
+        public void SetStatusEffectBarActive(CharacterUnit targetUnit, bool isActive)
+        {
+            if (targetUnit != null && statusEffectBars.TryGetValue(targetUnit, out StatusEffectBar bar))
+            {
+                bar.gameObject.SetActive(isActive);
+            }
+        }
+
+        /// <summary>
+        /// 여러 유닛의 상태 이상 바를 활성화/비활성화합니다.
+        /// </summary>
+        public void SetMultipleStatusEffectBarsActive(List<CharacterUnit> units, bool isActive)
+        {
+            if (units == null) return;
+
+            foreach (var unit in units)
+            {
+                if (unit != null && statusEffectBars.TryGetValue(unit, out StatusEffectBar bar))
+                {
+                    bar.gameObject.SetActive(isActive);
+                }
+            }
+        }
     }
 }

@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8cf7fb71d83d3604083d30dd86ea8f3a, type: 3}
   m_Name: Magician
   m_EditorClassIdentifier: 
-  maxHp: 20
+  maxHp: 5
   attack: 9
   defense: 6
   speed: 5

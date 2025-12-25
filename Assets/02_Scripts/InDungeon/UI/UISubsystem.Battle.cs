@@ -35,6 +35,22 @@ namespace _02_Scripts.InDungeon.UI
         }
 
         /// <summary>
+        /// 유닛의 HP 바를 활성화/비활성화합니다.
+        /// </summary>
+        public void SetHpBarActive(CharacterUnit unit, bool isActive)
+        {
+            hpBarController.SetHpBarActive(unit, isActive);
+        }
+
+        /// <summary>
+        /// 여러 유닛의 HP 바를 활성화/비활성화합니다.
+        /// </summary>
+        public void SetMultipleHpBarsActive(System.Collections.Generic.List<CharacterUnit> units, bool isActive)
+        {
+            hpBarController.SetMultipleHpBarsActive(units, isActive);
+        }
+
+        /// <summary>
         /// 유닛의 상태 이상 바를 생성합니다.
         /// </summary>
         public void CreateStatusEffectBar(CharacterUnit unit)
@@ -56,6 +72,22 @@ namespace _02_Scripts.InDungeon.UI
         public void UpdateStatusEffectIcons(CharacterUnit unit)
         {
             statusEffectBarController.UpdateStatusEffectIcons(unit);
+        }
+
+        /// <summary>
+        /// 유닛의 상태 이상 바를 활성화/비활성화합니다.
+        /// </summary>
+        public void SetStatusEffectBarActive(CharacterUnit unit, bool isActive)
+        {
+            statusEffectBarController.SetStatusEffectBarActive(unit, isActive);
+        }
+
+        /// <summary>
+        /// 여러 유닛의 상태 이상 바를 활성화/비활성화합니다.
+        /// </summary>
+        public void SetMultipleStatusEffectBarsActive(System.Collections.Generic.List<CharacterUnit> units, bool isActive)
+        {
+            statusEffectBarController.SetMultipleStatusEffectBarsActive(units, isActive);
         }
 
         public void OnSelectPlayerUnit(CharacterUnit characterUnit, bool[] skillUsableFlags)

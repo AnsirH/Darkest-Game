@@ -54,5 +54,32 @@ namespace _02_Scripts.InDungeon.UI
                 Debug.LogError("No Target Unit HpBar");
             }
         }
+
+        /// <summary>
+        /// 특정 유닛의 HP 바를 활성화/비활성화합니다.
+        /// </summary>
+        public void SetHpBarActive(CharacterUnit targetUnit, bool isActive)
+        {
+            if (targetUnit != null && hpBars.TryGetValue(targetUnit, out HpBar hpBar))
+            {
+                hpBar.gameObject.SetActive(isActive);
+            }
+        }
+
+        /// <summary>
+        /// 여러 유닛의 HP 바를 활성화/비활성화합니다.
+        /// </summary>
+        public void SetMultipleHpBarsActive(List<CharacterUnit> units, bool isActive)
+        {
+            if (units == null) return;
+
+            foreach (var unit in units)
+            {
+                if (unit != null && hpBars.TryGetValue(unit, out HpBar hpBar))
+                {
+                    hpBar.gameObject.SetActive(isActive);
+                }
+            }
+        }
     }
 }

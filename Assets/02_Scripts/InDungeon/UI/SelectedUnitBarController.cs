@@ -39,6 +39,12 @@ namespace _02_Scripts.InDungeon.UI
             selectedBar.gameObject.SetActive(active);
         }
 
+        public void SetActiveTargetableBar(bool active)
+        {
+            foreach (SelectedUnitBar targetableBar in targetableBars)
+                targetableBar.gameObject.SetActive(active);
+        }
+        
         /// <summary>
         /// 호버 바 활성화/비활성화
         /// </summary>
